@@ -1847,11 +1847,16 @@
           return { when, time };
         }
         function fromStoredChat(chat) {
+          const timestamp = Number(chat.updatedAt ?? chat.updated_at);
           return {
             id: chat.id,
             title: chat.title,
-            ...relativeChatDate(chat.updatedAt),
-            messages: chat.messages,
+            ...relativeChatDate(
+              Number.isFinite(timestamp)
+                ? timestamp
+                : Math.floor(Date.now() / 1000),
+            ),
+            messages: Array.isArray(chat.messages) ? chat.messages : [],
           };
         }
         function storageChat(chat) {
