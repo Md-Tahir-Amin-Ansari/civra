@@ -2,146 +2,137 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="stylesheet" href="styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="stylesheet" href="styles.css" />
     <title>Civra — Private Offline AI Chat</title>
     <script type="module" src="/main.js" defer></script>
   </head>
-
   <body>
     <main class="app-shell">
-      <aside class="sidebar" aria-label="Chats">
+      <aside class="sidebar" aria-label="Chat history">
         <div class="brand">
-          <span class="brand-mark" aria-hidden="true">C</span><span>Civra</span>
+          <span class="mark" aria-hidden="true">C</span><span>Civra</span>
         </div>
-        <button class="new-chat" type="button">New chat</button>
-        <nav class="chat-list" aria-label="Saved chats">
-          <p class="section-label">Recent</p>
-          <button class="chat-item active" type="button">
-            Getting started
+        <button class="button primary" id="new-chat" type="button">
+          New chat
+        </button>
+        <label class="search"
+          ><span class="sr-only">Search chats</span
+          ><input type="search" placeholder="Search chats"
+        /></label>
+        <nav class="history" aria-label="Saved chats">
+          <p class="history-label">Today</p>
+          <button class="history-item active" type="button">
+            <strong>Getting started</strong><small>Just now</small>
+          </button>
+          <p class="history-label">Previous 7 days</p>
+          <button class="history-item" type="button">
+            <strong>Plan a simple week of dinners</strong
+            ><small>Yesterday</small>
+          </button>
+          <button class="history-item" type="button">
+            <strong>Explain my electricity bill</strong><small>Tuesday</small>
           </button>
         </nav>
-        <div class="sidebar-bottom">
-          <button class="text-button" id="open-settings" type="button">
+        <div class="sidebar-footer">
+          <p class="model-note">Private AI runs on this PC</p>
+          <button class="button quiet" id="open-settings" type="button">
             Settings
           </button>
-          <p class="local-note">Chats stay on this device.</p>
         </div>
       </aside>
-      <section class="content">
+      <section class="workspace">
         <header class="topbar">
           <div>
-            <p class="eyebrow">PRIVATE OFFLINE AI CHAT</p>
-            <h1 id="screen-title">Welcome to Civra</h1>
+            <h1 id="chat-title">Getting started</h1>
+            <p id="chat-subtitle">Local · nothing leaves this device</p>
           </div>
-          <button
-            class="theme-toggle"
-            id="theme-toggle"
-            type="button"
-            aria-pressed="false"
-          >
-            Use dark theme
-          </button>
-        </header>
-        <section
-          class="setup-card"
-          id="setup-screen"
-          aria-labelledby="setup-heading"
-        >
-          <div class="setup-icon" aria-hidden="true">C</div>
-          <p class="eyebrow">ONE-TIME SETUP</p>
-          <h2 id="setup-heading">Download your private AI</h2>
-          <p>
-            To chat offline, Civra needs to download one approved model to this
-            device. It is about 2.4 GB and is checked before use.
-          </p>
-          <dl class="setup-details">
-            <div>
-              <dt>Internet needed</dt>
-              <dd>Only for this download</dd>
-            </div>
-            <div>
-              <dt>After setup</dt>
-              <dd>Chats run locally</dd>
-            </div>
-            <div>
-              <dt>Model choice</dt>
-              <dd>
-                <button class="inline-button" id="show-details" type="button">
-                  View details
-                </button>
-              </dd>
-            </div>
-          </dl>
-          <div class="setup-actions">
-            <button class="primary" id="continue-setup" type="button">
-              Continue</button
-            ><button class="secondary" id="try-shell" type="button">
-              Preview chat layout
+          <div class="top-actions">
+            <span class="status"><i></i>Local · CPU</span
+            ><button
+              class="button quiet"
+              id="theme-toggle"
+              type="button"
+              aria-pressed="false"
+            >
+              Dark theme
             </button>
           </div>
-          <p class="fine-print">
-            Civra will not silently send your chats to a cloud service. Model
-            answers can still be wrong—verify important information.
-          </p>
-        </section>
-        <section class="chat-screen hidden" id="chat-screen" aria-label="Chat">
-          <div class="privacy-banner">
-            Private mode: local model setup is required before messages can be
-            generated.
+        </header>
+        <section class="conversation" aria-live="polite">
+          <div class="welcome" id="welcome">
+            <span class="welcome-mark" aria-hidden="true">C</span>
+            <h2>What would you like to talk about?</h2>
+            <p>
+              Ask a question, get help writing, or think something through.
+              Civra keeps your messages on this PC.
+            </p>
+            <div class="suggestions">
+              <button type="button">
+                Explain a bill or letter I don't understand</button
+              ><button type="button">Help me write a polite message</button
+              ><button type="button">Plan a simple week of dinners</button>
+            </div>
+            <p class="disclaimer">
+              Answers can be wrong. Check anything important before you act on
+              it.
+            </p>
           </div>
-          <div class="messages">
-            <article class="message assistant">
-              <p class="message-label">Civra</p>
-              <p>
-                Once setup is complete, I will respond here using the local
-                model on your device.
-              </p>
-            </article>
-          </div>
-          <form class="composer">
-            <label class="sr-only" for="chat-input">Message</label
-            ><textarea
-              id="chat-input"
-              rows="2"
-              placeholder="Ask anything after setup"
-              disabled
-            ></textarea
-            ><button class="primary" type="submit" disabled>Send</button>
-          </form>
         </section>
+        <form class="composer" id="composer">
+          <label class="sr-only" for="message">Message Civra</label
+          ><textarea
+            id="message"
+            rows="1"
+            placeholder="Message Civra..."
+            disabled
+          ></textarea
+          ><button class="button primary" type="submit" disabled>Send</button>
+        </form>
+        <p class="footer-note">
+          Model setup is required before you can send a message.
+        </p>
       </section>
     </main>
-    <dialog id="details-dialog" aria-labelledby="details-title">
-      <div class="dialog-content">
-        <p class="eyebrow">MODEL DETAILS</p>
-        <h2 id="details-title">Approved local model</h2>
-        <p>
-          The MVP will use one verified Gemma 4 E2B LiteRT-LM artifact. Civra
-          will pin its source and SHA-256 checksum so an unapproved or damaged
-          download cannot load.
-        </p>
-        <button class="primary" id="close-details" type="button">Close</button>
-      </div>
-    </dialog>
-    <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <dialog id="settings-dialog" aria-labelledby="settings-heading">
       <div class="dialog-content">
         <p class="eyebrow">SETTINGS</p>
-        <h2 id="settings-title">Inference preference</h2>
-        <label class="setting-row"
-          ><span
-            ><strong>Reliable mode</strong
-            ><small>CPU is the default for dependable startup.</small></span
-          ><input type="radio" name="backend" checked /></label
-        ><label class="setting-row"
-          ><span
-            ><strong>Faster responses</strong
-            ><small
-              >GPU acceleration is experimental and will fall back
-              safely.</small
-            ></span
-          ><input type="radio" name="backend" /></label
-        ><button class="primary" id="close-settings" type="button">Done</button>
+        <h2 id="settings-heading">How Civra runs</h2>
+        <fieldset>
+          <legend>Appearance</legend>
+          <label class="choice"
+            ><span
+              ><strong>Match Windows</strong
+              ><small>Use your system’s theme.</small></span
+            ><input type="radio" name="theme" checked /></label
+          ><label class="choice"
+            ><span
+              ><strong>Dark theme</strong
+              ><small>Use the dark Civra theme.</small></span
+            ><input type="radio" name="theme"
+          /></label>
+        </fieldset>
+        <fieldset>
+          <legend>Inference</legend>
+          <label class="choice"
+            ><span
+              ><strong>Reliable mode</strong
+              ><small>CPU is the dependable default.</small></span
+            ><input type="radio" name="mode" checked /></label
+          ><label class="choice"
+            ><span
+              ><strong>Faster responses</strong
+              ><small
+                >GPU mode is experimental and can safely fall back to
+                CPU.</small
+              ></span
+            ><input type="radio" name="mode"
+          /></label>
+        </fieldset>
+        <button class="button primary" id="close-settings" type="button">
+          Done
+        </button>
       </div>
     </dialog>
   </body>
