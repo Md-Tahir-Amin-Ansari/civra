@@ -18,6 +18,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install project tooling
+        run: npm ci
+      - name: Check formatting
+        run: npm run format:check
       - name: Require current project context
         shell: pwsh
         run: ./scripts/check-context-update.ps1 -BaseRef $env:GITHUB_BASE_REF
