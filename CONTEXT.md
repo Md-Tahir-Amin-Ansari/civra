@@ -44,10 +44,10 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 
 ## Next steps
 
-1. Review and select a final UI direction using the design-neutral functional brief.
-2. Install the Windows Desktop C++ workload and verify a clean native Tauri build.
-3. Build the static first-launch and chat interface before integrating native LiteRT-LM.
-4. Define a versioned approved-artifact manifest and implement verified download.
+1. Replace the simulated setup flow with an approved local-model selection flow.
+2. Integrate LiteRT-LM CPU inference and stream genuine local replies into the existing chat UI.
+3. Define a versioned approved-artifact manifest and implement verified download.
+4. Add context-window tracking and compaction before the 12K-token threshold.
 
 ## Open risks
 
@@ -69,4 +69,5 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 - Native build bootstrap: Cargo’s sparse registry metadata route returned a temporary proxy 503, so the official Git-index fallback was used successfully. The Tauri capability configuration referenced an unavailable `opener:default` permission; it now grants only `core:default` until a real opener integration is added.
 - Native desktop shell verified: `cargo build --no-default-features` succeeds and the local `civra-desktop.exe` launches. Generated Tauri schemas are ignored by formatting checks; the generated Cargo lockfile is versioned for reproducible desktop builds.
 - Native-shell visual correction: Civra uses the Windows-provided title bar only; the reference mockup's in-page title bar is hidden. The shell root now fills the native content area with percentage sizing (rather than a constrained stage plus `100vw`), preventing the left gutter and horizontal overflow when maximized.
+- Local-history foundation: Civra now stores chats and messages in a local SQLite database through native Tauri commands. The visible UI loads saved chats at startup and persists send/reply completion, rename, single delete, and delete-all actions. `rusqlite` is bundled, so users do not need a separate SQLite installation. Rust unit tests cover save, load, rename, delete, and message-role validation; LiteRT-LM replies are still simulated.
 - UI exploration is intentionally separated from runtime work. `docs/UI-REQUIREMENTS.md` is a neutral, functional source brief for comparing external design concepts before committing to a final visual direction; it intentionally does not prescribe layout or visual style.
