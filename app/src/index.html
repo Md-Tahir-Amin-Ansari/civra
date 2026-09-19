@@ -1932,7 +1932,15 @@
               return;
             }
             allowingClose = true;
-            await appWindow.close();
+            // Calling and awaiting close from its own close-request handler can
+            // deadlock the native close cycle. Queue a new request after this
+            // prevented handler has returned instead.
+            setTimeout(() => {
+              void appWindow.close().catch(() => {
+                allowingClose = false;
+                toast("Civra couldn't close safely. Please try again.");
+              });
+            }, 0);
           });
         }
 
