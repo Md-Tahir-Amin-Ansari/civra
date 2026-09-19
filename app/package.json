@@ -1,0 +1,13 @@
+{
+  "name": "civra-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Civra — Private Offline AI Chat desktop application",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

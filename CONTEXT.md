@@ -2,9 +2,9 @@
 
 ## Current status
 
-**Milestone:** 0 — foundations
+**Milestone:** 1 — local app shell
 
-**Current objective:** establish a reproducible, safe project baseline before application scaffolding.
+**Current objective:** validate the desktop shell and build the local-first MVP incrementally.
 
 ## Product in one sentence
 
@@ -44,8 +44,8 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 
 ## Next steps
 
-1. Configure protected `main` in GitHub and require the `Context and project checks` workflow.
-2. Scaffold the Tauri shell and confirm a clean Windows build environment.
+1. Review and select a final UI direction using the design-neutral functional brief.
+2. Install the Windows Desktop C++ workload and verify a clean native Tauri build.
 3. Build the static first-launch and chat interface before integrating native LiteRT-LM.
 4. Define a versioned approved-artifact manifest and implement verified download.
 
@@ -58,6 +58,15 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 ## Latest change
 
 - Milestone 0 foundation was committed locally as `a9578f8`. Git attributes keep the versioned shell hook in LF format so it executes reliably on Windows Git installations.
-- Public remote connected: `https://github.com/Md-Tahir-Amin-Ansari/civra`. Branch `chore/remote-foundation` is the first branch using the protected-main workflow.
+- Public remote connected: `https://github.com/Md-Tahir-Amin-Ansari/civra`; protected `main` is now the integration branch.
 - CI quality gate: GitHub Actions checks required project/context files and Prettier formatting. Future behavior changes must add focused automated tests before merge; test infrastructure will be added with the implementation it validates.
 - CI formatting correction: enforce LF line endings for repository text files. Windows CRLF working copies previously masked Prettier differences that the Linux GitHub runner correctly rejected.
+- Tauri 2 vanilla-JavaScript shell scaffolded in `app/` on `feat/desktop-shell`; npm dependencies installed with zero reported npm vulnerabilities. Visual Studio's installer exists, but the C++ linker (`cl.exe`) is absent from this environment, so the first native Windows build remains blocked pending the Desktop C++ workload.
+- Desktop-shell sources were brought to the mandatory Prettier baseline after rebasing onto the foundation quality gate; `npm run format:check` passes.
+- Provisional UI direction selected: Claude-inspired information architecture with a DeepSeek-derived teal/neutral palette. Newsreader and Atkinson Hyperlegible are bundled as local OFL-1.1 assets; no runtime font request is permitted.
+- User-provided UI mockup HTML files are reference-only artifacts and are excluded from automated formatting and commits.
+- Desktop-shell UI corrected: the Claude reference is the actual structural baseline; only its colour system, local font delivery, and non-MVP resumable-download behavior are changed. Retry starts a clean download, as required for MVP.
+- Native build bootstrap: Cargo’s sparse registry metadata route returned a temporary proxy 503, so the official Git-index fallback was used successfully. The Tauri capability configuration referenced an unavailable `opener:default` permission; it now grants only `core:default` until a real opener integration is added.
+- Native desktop shell verified: `cargo build --no-default-features` succeeds and the local `civra-desktop.exe` launches. Generated Tauri schemas are ignored by formatting checks; the generated Cargo lockfile is versioned for reproducible desktop builds.
+- Native-shell visual correction: Civra uses the Windows-provided title bar only; the reference mockup's in-page title bar is hidden. The shell root now fills the native content area with percentage sizing (rather than a constrained stage plus `100vw`), preventing the left gutter and horizontal overflow when maximized.
+- UI exploration is intentionally separated from runtime work. `docs/UI-REQUIREMENTS.md` is a neutral, functional source brief for comparing external design concepts before committing to a final visual direction; it intentionally does not prescribe layout or visual style.

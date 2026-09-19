@@ -9,7 +9,8 @@ This roadmap is intentionally short. It distinguishes a useful weekend MVP from 
 - [x] Initialize local Git and a versioned pre-commit policy.
 - [x] Connect public GitHub repository.
 - [ ] Protect `main` and require CI in GitHub settings.
-- [ ] Scaffold Tauri and verify a clean Windows build.
+- [x] Scaffold the Tauri shell and install its JavaScript dependencies.
+- [ ] Verify a clean Windows build after adding the Desktop C++ workload.
 
 ## Milestone 1 — Local app shell
 

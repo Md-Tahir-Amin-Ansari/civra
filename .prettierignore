@@ -2,4 +2,10 @@
 node_modules/
 app/node_modules/
 app/src-tauri/target/
+app/src-tauri/gen/
 app/src-tauri/icons/
+docs/*mockup*.html
+docs/deepseek_html_mcokup.html
+docs/gemini-code-*.html
+docs/glm.html
+docs/Qwen_html_mockup.html
