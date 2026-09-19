@@ -1820,6 +1820,17 @@
           pending = null;
         const invoke = window.__TAURI__?.core?.invoke;
         const queuedSaves = new WeakMap();
+        const pendingWrites = new Set();
+        let allowingClose = false;
+
+        function trackWrite(promise) {
+          pendingWrites.add(promise);
+          void promise.then(
+            () => pendingWrites.delete(promise),
+            () => pendingWrites.delete(promise),
+          );
+          return promise;
+        }
 
         function relativeChatDate(unixSeconds) {
           const date = new Date(unixSeconds * 1000);
@@ -1895,16 +1906,34 @@
               if (S.screen === "chat" && S.cur === chat) refreshHead();
               refreshList();
             });
-          queuedSaves.set(chat, next);
-          return next;
+          const tracked = trackWrite(next);
+          queuedSaves.set(chat, tracked);
+          return tracked;
         }
         function removeStoredChat(id) {
           if (!invoke || id === null) return Promise.resolve();
-          return invoke("delete_chat", { id });
+          return trackWrite(invoke("delete_chat", { id }));
         }
         function removeAllStoredChats() {
           if (!invoke) return Promise.resolve();
-          return invoke("delete_all_chats");
+          return trackWrite(invoke("delete_all_chats"));
+        }
+
+        async function protectPendingWritesOnClose() {
+          const getCurrentWindow = window.__TAURI__?.window?.getCurrentWindow;
+          if (!getCurrentWindow) return;
+          const appWindow = getCurrentWindow();
+          await appWindow.onCloseRequested(async (event) => {
+            if (allowingClose || !pendingWrites.size) return;
+            event.preventDefault();
+            const completed = await Promise.allSettled([...pendingWrites]);
+            if (completed.some((result) => result.status === "rejected")) {
+              toast("Civra couldn't save a recent change. Please try again.");
+              return;
+            }
+            allowingClose = true;
+            await appWindow.close();
+          });
         }
 
         /* ---------- helpers ---------- */
@@ -2687,8 +2716,10 @@
               break;
             case "startChat":
               if (invoke)
-                void invoke("set_setup_complete", { complete: true }).catch(
-                  () => toast("Civra couldn't save setup status. Try again."),
+                void trackWrite(
+                  invoke("set_setup_complete", { complete: true }),
+                ).catch(() =>
+                  toast("Civra couldn't save setup status. Try again."),
                 );
               S.screen = "chat";
               S.cur = newDraft();
@@ -3102,6 +3133,7 @@
           syncSel();
           applyTheme();
           render();
+          await protectPendingWritesOnClose();
         }
         void initialiseApp();
       })();
