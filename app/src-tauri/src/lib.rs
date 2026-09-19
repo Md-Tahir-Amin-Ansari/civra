@@ -1,4 +1,5 @@
 mod model;
+mod runtime;
 mod storage;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -13,6 +14,7 @@ pub fn run() {
             storage::delete_chat,
             storage::delete_all_chats,
             model::verify_approved_model,
+            runtime::runtime_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
