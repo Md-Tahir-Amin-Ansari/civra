@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Versioned hook: a developer runs scripts/setup-git-hooks.ps1 once after clone.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/check-context-update.ps1 -Staged
+exit $?

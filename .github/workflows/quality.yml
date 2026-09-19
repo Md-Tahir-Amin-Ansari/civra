@@ -1,0 +1,29 @@
+name: Quality
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches-ignore: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  context-and-project-checks:
+    name: Context and project checks
+    runs-on: windows-latest
+    steps:
+      - name: Check out complete history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require current project context
+        shell: pwsh
+        run: ./scripts/check-context-update.ps1 -BaseRef $env:GITHUB_BASE_REF
+      - name: Verify required project files
+        shell: pwsh
+        run: |
+          $required = @('README.md', 'CONTEXT.md', 'STANDARDS.md', 'ROADMAP.md')
+          $missing = $required | Where-Object { -not (Test-Path $_) }
+          if ($missing) { throw "Missing required files: $($missing -join ', ')" }

@@ -1,0 +1,23 @@
+# Dependencies and build output
+node_modules/
+dist/
+src-tauri/target/
+
+# Local data and runtime assets
+data/
+models/
+runtime/
+*.litertlm
+*.db
+*.sqlite
+
+# Environment and editor files
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+.DS_Store
