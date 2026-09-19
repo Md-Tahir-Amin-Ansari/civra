@@ -54,3 +54,7 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 - Windows native build tooling may be missing; verify before committing to a packaging timeline.
 - LiteRT-LM native bridge design and redistribution packaging are not yet validated.
 - Civra is a working name; public launch needs an availability/trademark review.
+
+## Latest change
+
+- Milestone 0 foundation was committed locally as `a9578f8`. Git attributes keep the versioned shell hook in LF format so it executes reliably on Windows Git installations.
