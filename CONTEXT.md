@@ -65,4 +65,5 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 - Desktop-shell sources were brought to the mandatory Prettier baseline after rebasing onto the foundation quality gate; `npm run format:check` passes.
 - Provisional UI direction selected: Claude-inspired information architecture with a DeepSeek-derived teal/neutral palette. Newsreader and Atkinson Hyperlegible are bundled as local OFL-1.1 assets; no runtime font request is permitted.
 - User-provided UI mockup HTML files are reference-only artifacts and are excluded from automated formatting and commits.
+- Desktop-shell UI corrected: the Claude reference is the actual structural baseline; only its colour system, local font delivery, and non-MVP resumable-download behavior are changed. Retry starts a clean download, as required for MVP.
 - UI exploration is intentionally separated from runtime work. `docs/UI-REQUIREMENTS.md` is a neutral, functional source brief for comparing external design concepts before committing to a final visual direction; it intentionally does not prescribe layout or visual style.
