@@ -44,7 +44,7 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 
 ## Next steps
 
-1. Add project governance files, hook, CI, and a GitHub remote.
+1. Configure protected `main` in GitHub and require the `Context and project checks` workflow.
 2. Scaffold the Tauri shell and confirm a clean Windows build environment.
 3. Build the static first-launch and chat interface before integrating native LiteRT-LM.
 4. Define a versioned approved-artifact manifest and implement verified download.
@@ -58,3 +58,4 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 ## Latest change
 
 - Milestone 0 foundation was committed locally as `a9578f8`. Git attributes keep the versioned shell hook in LF format so it executes reliably on Windows Git installations.
+- Public remote connected: `https://github.com/Md-Tahir-Amin-Ansari/civra`. Branch `chore/remote-foundation` is the first branch using the protected-main workflow.

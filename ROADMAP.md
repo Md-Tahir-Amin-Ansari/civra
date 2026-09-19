@@ -7,7 +7,8 @@ This roadmap is intentionally short. It distinguishes a useful weekend MVP from 
 - [x] Separate Civra repository boundary from LiteRT research.
 - [x] Define product context, standards, roadmap, and landing README.
 - [x] Initialize local Git and a versioned pre-commit policy.
-- [ ] Connect public GitHub repository and protect `main`.
+- [x] Connect public GitHub repository.
+- [ ] Protect `main` and require CI in GitHub settings.
 - [ ] Scaffold Tauri and verify a clean Windows build.
 
 ## Milestone 1 — Local app shell
