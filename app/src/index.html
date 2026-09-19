@@ -1869,6 +1869,11 @@
           if (!invoke) return;
           const chats = await invoke("load_chats");
           S.chats = chats.map(fromStoredChat);
+          if (S.chats.length) {
+            S.screen = "chat";
+            S.cur = S.chats[0];
+            S.notice = null;
+          }
         }
         function persistChat(chat) {
           if (!invoke) return Promise.resolve();
