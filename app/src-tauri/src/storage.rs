@@ -44,6 +44,7 @@ pub struct StoredMessage {
 #[serde(rename_all = "camelCase")]
 pub struct AppState {
     pub setup_complete: bool,
+    pub model_path: Option<String>,
 }
 
 fn now_unix() -> Result<i64, String> {
@@ -119,9 +120,31 @@ fn app_state(connection: &Connection) -> Result<AppState, String> {
         )
         .optional()
         .map_err(|error| format!("Could not read Civra app state: {error}"))?;
+    let model_path = connection
+        .query_row(
+            "SELECT value FROM app_state WHERE key = 'model_path'",
+            [],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()
+        .map_err(|error| format!("Could not read Civra model location: {error}"))?;
     Ok(AppState {
         setup_complete: value.as_deref() == Some("true"),
+        model_path,
     })
+}
+
+#[tauri::command]
+pub fn set_model_path(app: AppHandle, path: String) -> Result<(), String> {
+    let connection = database(&app)?;
+    connection
+        .execute(
+            "INSERT INTO app_state (key, value) VALUES ('model_path', ?1)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            [path],
+        )
+        .map_err(|error| format!("Could not save Civra model location: {error}"))?;
+    Ok(())
 }
 
 fn set_app_setup_complete(connection: &Connection, complete: bool) -> Result<(), String> {
