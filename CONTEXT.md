@@ -2,9 +2,9 @@
 
 ## Current status
 
-**Milestone:** 0 — foundations
+**Milestone:** 1 — local app shell
 
-**Current objective:** establish a reproducible, safe project baseline before application scaffolding.
+**Current objective:** validate the desktop shell and build the local-first MVP incrementally.
 
 ## Product in one sentence
 
@@ -44,8 +44,8 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 
 ## Next steps
 
-1. Configure protected `main` in GitHub and require the `Context and project checks` workflow.
-2. Scaffold the Tauri shell and confirm a clean Windows build environment.
+1. Review and select a final UI direction using the design-neutral functional brief.
+2. Install the Windows Desktop C++ workload and verify a clean native Tauri build.
 3. Build the static first-launch and chat interface before integrating native LiteRT-LM.
 4. Define a versioned approved-artifact manifest and implement verified download.
 
@@ -58,6 +58,7 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 ## Latest change
 
 - Milestone 0 foundation was committed locally as `a9578f8`. Git attributes keep the versioned shell hook in LF format so it executes reliably on Windows Git installations.
-- Public remote connected: `https://github.com/Md-Tahir-Amin-Ansari/civra`. Branch `chore/remote-foundation` is the first branch using the protected-main workflow.
+- Public remote connected: `https://github.com/Md-Tahir-Amin-Ansari/civra`; protected `main` is now the integration branch.
 - CI quality gate: GitHub Actions checks required project/context files and Prettier formatting. Future behavior changes must add focused automated tests before merge; test infrastructure will be added with the implementation it validates.
 - CI formatting correction: enforce LF line endings for repository text files. Windows CRLF working copies previously masked Prettier differences that the Linux GitHub runner correctly rejected.
+- Tauri 2 vanilla-JavaScript shell scaffolded in `app/` on `feat/desktop-shell`; npm dependencies installed with zero reported npm vulnerabilities. Visual Studio's installer exists, but the C++ linker (`cl.exe`) is absent from this environment, so the first native Windows build remains blocked pending the Desktop C++ workload.

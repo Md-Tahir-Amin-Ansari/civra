@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Civra — Private Offline AI Chat</title>
+    <script type="module" src="/main.js" defer></script>
+  </head>
+
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar" aria-label="Chats">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">C</span><span>Civra</span></div>
+        <button class="new-chat" type="button">New chat</button>
+        <nav class="chat-list" aria-label="Saved chats"><p class="section-label">Recent</p><button class="chat-item active" type="button">Getting started</button></nav>
+        <div class="sidebar-bottom"><button class="text-button" id="open-settings" type="button">Settings</button><p class="local-note">Chats stay on this device.</p></div>
+      </aside>
+      <section class="content">
+        <header class="topbar"><div><p class="eyebrow">PRIVATE OFFLINE AI CHAT</p><h1 id="screen-title">Welcome to Civra</h1></div><button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">Use dark theme</button></header>
+        <section class="setup-card" id="setup-screen" aria-labelledby="setup-heading">
+          <div class="setup-icon" aria-hidden="true">C</div><p class="eyebrow">ONE-TIME SETUP</p><h2 id="setup-heading">Download your private AI</h2>
+          <p>To chat offline, Civra needs to download one approved model to this device. It is about 2.4 GB and is checked before use.</p>
+          <dl class="setup-details"><div><dt>Internet needed</dt><dd>Only for this download</dd></div><div><dt>After setup</dt><dd>Chats run locally</dd></div><div><dt>Model choice</dt><dd><button class="inline-button" id="show-details" type="button">View details</button></dd></div></dl>
+          <div class="setup-actions"><button class="primary" id="continue-setup" type="button">Continue</button><button class="secondary" id="try-shell" type="button">Preview chat layout</button></div>
+          <p class="fine-print">Civra will not silently send your chats to a cloud service. Model answers can still be wrong—verify important information.</p>
+        </section>
+        <section class="chat-screen hidden" id="chat-screen" aria-label="Chat"><div class="privacy-banner">Private mode: local model setup is required before messages can be generated.</div><div class="messages"><article class="message assistant"><p class="message-label">Civra</p><p>Once setup is complete, I will respond here using the local model on your device.</p></article></div><form class="composer"><label class="sr-only" for="chat-input">Message</label><textarea id="chat-input" rows="2" placeholder="Ask anything after setup" disabled></textarea><button class="primary" type="submit" disabled>Send</button></form></section>
+      </section>
+    </main>
+    <dialog id="details-dialog" aria-labelledby="details-title"><div class="dialog-content"><p class="eyebrow">MODEL DETAILS</p><h2 id="details-title">Approved local model</h2><p>The MVP will use one verified Gemma 4 E2B LiteRT-LM artifact. Civra will pin its source and SHA-256 checksum so an unapproved or damaged download cannot load.</p><button class="primary" id="close-details" type="button">Close</button></div></dialog>
+    <dialog id="settings-dialog" aria-labelledby="settings-title"><div class="dialog-content"><p class="eyebrow">SETTINGS</p><h2 id="settings-title">Inference preference</h2><label class="setting-row"><span><strong>Reliable mode</strong><small>CPU is the default for dependable startup.</small></span><input type="radio" name="backend" checked /></label><label class="setting-row"><span><strong>Faster responses</strong><small>GPU acceleration is experimental and will fall back safely.</small></span><input type="radio" name="backend" /></label><button class="primary" id="close-settings" type="button">Done</button></div></dialog>
+  </body>
+</html>
