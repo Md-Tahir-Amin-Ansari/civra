@@ -37,6 +37,12 @@ pub struct StoredMessage {
     pub status: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppState {
+    pub setup_complete: bool,
+}
+
 fn now_unix() -> Result<i64, String> {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -44,7 +50,7 @@ fn now_unix() -> Result<i64, String> {
         .map_err(|error| format!("System time is unavailable: {error}"))
 }
 
-fn initialise(connection: &Connection) -> Result<(), String> {
+fn initialise(connection: &Connection, database_existed: bool) -> Result<(), String> {
     connection
         .execute_batch(
             "
@@ -65,9 +71,25 @@ fn initialise(connection: &Connection) -> Result<(), String> {
                 UNIQUE(chat_id, position)
             );
             CREATE INDEX IF NOT EXISTS messages_by_chat ON messages(chat_id, position);
+            CREATE TABLE IF NOT EXISTS app_state (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            );
             ",
         )
-        .map_err(|error| format!("Could not initialise chat history: {error}"))
+        .map_err(|error| format!("Could not initialise chat history: {error}"))?;
+
+    // Versions before app_state inferred setup from whether chats existed. A
+    // pre-existing database therefore represents a completed prototype setup.
+    if database_existed {
+        connection
+            .execute(
+                "INSERT OR IGNORE INTO app_state (key, value) VALUES ('setup_complete', 'true')",
+                [],
+            )
+            .map_err(|error| format!("Could not migrate Civra app state: {error}"))?;
+    }
+    Ok(())
 }
 
 fn database(app: &AppHandle) -> Result<Connection, String> {
@@ -77,10 +99,37 @@ fn database(app: &AppHandle) -> Result<Connection, String> {
         .map_err(|error| format!("Could not find Civra's local data folder: {error}"))?;
     fs::create_dir_all(&directory)
         .map_err(|error| format!("Could not create Civra's local data folder: {error}"))?;
-    let connection = Connection::open(directory.join("history.sqlite3"))
+    let path = directory.join("history.sqlite3");
+    let database_existed = path.exists();
+    let connection = Connection::open(path)
         .map_err(|error| format!("Could not open chat history: {error}"))?;
-    initialise(&connection)?;
+    initialise(&connection, database_existed)?;
     Ok(connection)
+}
+
+fn app_state(connection: &Connection) -> Result<AppState, String> {
+    let value = connection
+        .query_row(
+            "SELECT value FROM app_state WHERE key = 'setup_complete'",
+            [],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()
+        .map_err(|error| format!("Could not read Civra app state: {error}"))?;
+    Ok(AppState {
+        setup_complete: value.as_deref() == Some("true"),
+    })
+}
+
+fn set_app_setup_complete(connection: &Connection, complete: bool) -> Result<(), String> {
+    connection
+        .execute(
+            "INSERT INTO app_state (key, value) VALUES ('setup_complete', ?1)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            [if complete { "true" } else { "false" }],
+        )
+        .map_err(|error| format!("Could not save Civra app state: {error}"))?;
+    Ok(())
 }
 
 fn read_chat(connection: &Connection, id: i64) -> Result<Option<StoredChat>, String> {
@@ -200,6 +249,16 @@ pub fn load_chats(app: AppHandle) -> Result<Vec<StoredChat>, String> {
 }
 
 #[tauri::command]
+pub fn load_app_state(app: AppHandle) -> Result<AppState, String> {
+    app_state(&database(&app)?)
+}
+
+#[tauri::command]
+pub fn set_setup_complete(app: AppHandle, complete: bool) -> Result<(), String> {
+    set_app_setup_complete(&database(&app)?, complete)
+}
+
+#[tauri::command]
 pub fn save_chat(app: AppHandle, chat: ChatInput) -> Result<StoredChat, String> {
     save(&mut database(&app)?, chat)
 }
@@ -250,7 +309,7 @@ mod tests {
 
     fn memory_database() -> Connection {
         let connection = Connection::open_in_memory().expect("open memory database");
-        initialise(&connection).expect("initialise schema");
+        initialise(&connection, false).expect("initialise schema");
         connection
     }
 
@@ -321,5 +380,17 @@ mod tests {
         );
         assert!(result.is_err());
         assert!(list(&connection).expect("list chats").is_empty());
+    }
+
+    #[test]
+    fn setup_state_is_independent_of_chat_history() {
+        let connection = memory_database();
+        assert!(!app_state(&connection).expect("read fresh app state").setup_complete);
+        set_app_setup_complete(&connection, true).expect("mark setup complete");
+        assert!(app_state(&connection).expect("read completed app state").setup_complete);
+        connection
+            .execute("DELETE FROM chats", [])
+            .expect("clear chat history");
+        assert!(app_state(&connection).expect("read state after deletion").setup_complete);
     }
 }

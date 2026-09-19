@@ -5,6 +5,8 @@ pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             storage::load_chats,
+            storage::load_app_state,
+            storage::set_setup_complete,
             storage::save_chat,
             storage::rename_chat,
             storage::delete_chat,

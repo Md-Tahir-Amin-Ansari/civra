@@ -1872,9 +1872,12 @@
         }
         async function loadSavedChats() {
           if (!invoke) return;
-          const chats = await invoke("load_chats");
+          const [chats, appState] = await Promise.all([
+            invoke("load_chats"),
+            invoke("load_app_state"),
+          ]);
           S.chats = chats.map(fromStoredChat);
-          if (S.chats.length) {
+          if (appState.setupComplete) {
             S.screen = "chat";
             S.cur = newDraft();
             S.notice = null;
@@ -2683,6 +2686,10 @@
               runDownload(0);
               break;
             case "startChat":
+              if (invoke)
+                void invoke("set_setup_complete", { complete: true }).catch(
+                  () => toast("Civra couldn't save setup status. Try again."),
+                );
               S.screen = "chat";
               S.cur = newDraft();
               S.notice = "ready";
