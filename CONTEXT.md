@@ -2,9 +2,9 @@
 
 ## Current status
 
-**Milestone:** 1 — local app shell
+**Milestone:** 2 — reliable local inference
 
-**Current objective:** validate the desktop shell and build the local-first MVP incrementally.
+**Current objective:** establish the verified, CPU-first native LiteRT-LM runtime foundation for the local-first MVP.
 
 ## Product in one sentence
 
@@ -74,3 +74,5 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 - Setup-state correction in progress: setup completion is being persisted separately from chat history. Clearing all chats must never make Civra repeat model setup; the migration treats the current prototype's existing local database as setup-complete, while a truly fresh database still begins at setup.
 - Persistence durability follow-up: an intermittent disappearance report is being treated as a close-race risk even though direct database inspection showed the reported chat was saved. Civra keeps SQLite writes transactional and serializes writes per chat. A frontend native-close interceptor was removed because it trapped the user in the window; a future native close-flush mechanism requires its own integration test before it is reintroduced.
 - UI exploration is intentionally separated from runtime work. `docs/UI-REQUIREMENTS.md` is a neutral, functional source brief for comparing external design concepts before committing to a final visual direction; it intentionally does not prescribe layout or visual style.
+- Native runtime feasibility gate: the official LiteRT-LM 0.17.1 Windows DLL exports the required settings, engine, conversation, and streaming APIs. The exact approved Gemma artifact initialized successfully at 16K on CPU and released cleanly. Civra will use path-based model loading, not LiteRT-LM's raw-file-descriptor path, because an upstream Windows CRT issue has been reported for that alternative. The app does not yet bundle the runtime DLL; redistribution notices and a reproducible packaging method remain required.
+- Approved-model integrity foundation: native code now pins the exact MVP artifact filename, byte size, and SHA-256, exposing verification for future setup/download UI. It deliberately accepts no arbitrary model artifact.

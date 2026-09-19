@@ -1,6 +1,9 @@
 use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
-use std::{fs, time::{SystemTime, UNIX_EPOCH}};
+use std::{
+    fs,
+    time::{SystemTime, UNIX_EPOCH},
+};
 use tauri::{AppHandle, Manager};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -101,8 +104,8 @@ fn database(app: &AppHandle) -> Result<Connection, String> {
         .map_err(|error| format!("Could not create Civra's local data folder: {error}"))?;
     let path = directory.join("history.sqlite3");
     let database_existed = path.exists();
-    let connection = Connection::open(path)
-        .map_err(|error| format!("Could not open chat history: {error}"))?;
+    let connection =
+        Connection::open(path).map_err(|error| format!("Could not open chat history: {error}"))?;
     initialise(&connection, database_existed)?;
     Ok(connection)
 }
@@ -187,7 +190,9 @@ fn list(connection: &Connection) -> Result<Vec<StoredChat>, String> {
         .collect::<Result<Vec<_>, _>>()
         .map_err(|error| format!("Could not list chats: {error}"))?;
     ids.into_iter()
-        .map(|id| read_chat(connection, id)?.ok_or_else(|| "Chat disappeared while loading".to_owned()))
+        .map(|id| {
+            read_chat(connection, id)?.ok_or_else(|| "Chat disappeared while loading".to_owned())
+        })
         .collect()
 }
 
@@ -266,7 +271,8 @@ pub fn save_chat(app: AppHandle, chat: ChatInput) -> Result<StoredChat, String> 
 #[tauri::command]
 pub fn rename_chat(app: AppHandle, id: i64, title: String) -> Result<StoredChat, String> {
     let mut connection = database(&app)?;
-    let existing = read_chat(&connection, id)?.ok_or_else(|| "This chat no longer exists.".to_owned())?;
+    let existing =
+        read_chat(&connection, id)?.ok_or_else(|| "This chat no longer exists.".to_owned())?;
     save(
         &mut connection,
         ChatInput {
@@ -385,12 +391,24 @@ mod tests {
     #[test]
     fn setup_state_is_independent_of_chat_history() {
         let connection = memory_database();
-        assert!(!app_state(&connection).expect("read fresh app state").setup_complete);
+        assert!(
+            !app_state(&connection)
+                .expect("read fresh app state")
+                .setup_complete
+        );
         set_app_setup_complete(&connection, true).expect("mark setup complete");
-        assert!(app_state(&connection).expect("read completed app state").setup_complete);
+        assert!(
+            app_state(&connection)
+                .expect("read completed app state")
+                .setup_complete
+        );
         connection
             .execute("DELETE FROM chats", [])
             .expect("clear chat history");
-        assert!(app_state(&connection).expect("read state after deletion").setup_complete);
+        assert!(
+            app_state(&connection)
+                .expect("read state after deletion")
+                .setup_complete
+        );
     }
 }

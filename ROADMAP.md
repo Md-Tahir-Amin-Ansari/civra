@@ -16,12 +16,12 @@ This roadmap is intentionally short. It distinguishes a useful weekend MVP from 
 
 - [ ] First-launch consent and model-download state UI.
 - [ ] Responsive light/dark chat interface.
-- [ ] Local SQLite session/history layer.
+- [x] Local SQLite session/history layer.
 - [ ] Context-budget and local-compaction plumbing.
 
 ## Milestone 2 — Reliable local inference
 
-- [ ] Approved model-artifact manifest and SHA-256 verification.
+- [~] Approved model-artifact manifest and SHA-256 verification (native verification complete; setup flow wiring remains).
 - [ ] LiteRT-LM native bridge, streaming, cancellation, and CPU default.
 - [ ] Experimental GPU setting and reliable fallback.
 - [ ] Offline/privacy verification.
