@@ -1,4 +1,5 @@
+# Keep every repository text file identical on Windows and Linux CI.
+* text=auto eol=lf
+
 # The executable Git hook must remain a Unix shell file on Windows.
 .githooks/* text eol=lf
-*.yml text eol=lf
-*.yaml text eol=lf

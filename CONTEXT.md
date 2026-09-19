@@ -60,3 +60,4 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 - Milestone 0 foundation was committed locally as `a9578f8`. Git attributes keep the versioned shell hook in LF format so it executes reliably on Windows Git installations.
 - Public remote connected: `https://github.com/Md-Tahir-Amin-Ansari/civra`. Branch `chore/remote-foundation` is the first branch using the protected-main workflow.
 - CI quality gate: GitHub Actions checks required project/context files and Prettier formatting. Future behavior changes must add focused automated tests before merge; test infrastructure will be added with the implementation it validates.
+- CI formatting correction: enforce LF line endings for repository text files. Windows CRLF working copies previously masked Prettier differences that the Linux GitHub runner correctly rejected.
