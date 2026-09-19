@@ -1807,7 +1807,7 @@
           gpuSim: "ok",
           mode: "cpu",
           gpuState: null,
-          chats: sampleChats(),
+          chats: [],
           cur: newDraft(),
           query: "",
           drawer: false,
@@ -1818,6 +1818,105 @@
         const T = { dl: null, ver: null, gpu: null, toast: null };
         let lastFocus = null,
           pending = null;
+        const invoke = window.__TAURI__?.core?.invoke;
+        const queuedSaves = new WeakMap();
+        const pendingWrites = new Set();
+
+        function trackWrite(promise) {
+          pendingWrites.add(promise);
+          void promise.then(
+            () => pendingWrites.delete(promise),
+            () => pendingWrites.delete(promise),
+          );
+          return promise;
+        }
+
+        function relativeChatDate(unixSeconds) {
+          const date = new Date(unixSeconds * 1000);
+          const today = new Date();
+          const days = Math.floor(
+            (new Date(today.getFullYear(), today.getMonth(), today.getDate()) -
+              new Date(date.getFullYear(), date.getMonth(), date.getDate())) /
+              86400000,
+          );
+          const when =
+            days <= 0
+              ? "Today"
+              : days === 1
+                ? "Yesterday"
+                : days <= 7
+                  ? "Previous 7 days"
+                  : "Older";
+          const time =
+            days <= 0
+              ? date.toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+              : date.toLocaleDateString([], { day: "numeric", month: "short" });
+          return { when, time };
+        }
+        function fromStoredChat(chat) {
+          const timestamp = Number(chat.updatedAt ?? chat.updated_at);
+          return {
+            id: chat.id,
+            title: chat.title,
+            ...relativeChatDate(
+              Number.isFinite(timestamp)
+                ? timestamp
+                : Math.floor(Date.now() / 1000),
+            ),
+            messages: Array.isArray(chat.messages) ? chat.messages : [],
+          };
+        }
+        function storageChat(chat) {
+          return {
+            id: chat.id,
+            title: chat.title,
+            messages: chat.messages.map((message) => ({
+              role: message.role,
+              text: message.text,
+              status: message.status || null,
+            })),
+          };
+        }
+        async function loadSavedChats() {
+          if (!invoke) return;
+          const [chats, appState] = await Promise.all([
+            invoke("load_chats"),
+            invoke("load_app_state"),
+          ]);
+          S.chats = chats.map(fromStoredChat);
+          if (appState.setupComplete) {
+            S.screen = "chat";
+            S.cur = newDraft();
+            S.notice = null;
+          }
+        }
+        function persistChat(chat) {
+          if (!invoke) return Promise.resolve();
+          const previous = queuedSaves.get(chat) || Promise.resolve();
+          const next = previous
+            .catch(() => undefined)
+            .then(() => invoke("save_chat", { chat: storageChat(chat) }))
+            .then((stored) => {
+              chat.id = stored.id;
+              Object.assign(chat, relativeChatDate(stored.updatedAt));
+              if (S.screen === "chat" && S.cur === chat) refreshHead();
+              refreshList();
+            });
+          const tracked = trackWrite(next);
+          queuedSaves.set(chat, tracked);
+          return tracked;
+        }
+        function removeStoredChat(id) {
+          if (!invoke || id === null) return Promise.resolve();
+          return trackWrite(invoke("delete_chat", { id }));
+        }
+        function removeAllStoredChats() {
+          if (!invoke) return Promise.resolve();
+          return trackWrite(invoke("delete_all_chats"));
+        }
 
         /* ---------- helpers ---------- */
         function announce(m) {
@@ -2258,6 +2357,9 @@
                 clearInterval(S.streaming.timer);
                 m.status = "done";
                 S.streaming = null;
+                void persistChat(c).catch(() =>
+                  toast("Civra couldn't save this chat. Try again."),
+                );
                 refreshThread();
                 announce("Reply finished.");
               } else tickText(m);
@@ -2269,6 +2371,9 @@
           if (!S.streaming) return;
           clearInterval(S.streaming.timer);
           S.streaming.m.status = "stopped";
+          void persistChat(S.cur).catch(() =>
+            toast("Civra couldn't save this chat. Try again."),
+          );
           S.streaming = null;
           if (!silent) {
             refreshThread();
@@ -2283,7 +2388,6 @@
           if (!text || S.streaming) return;
           const c = S.cur;
           if (c.id === null) {
-            c.id = S.nextId++;
             c.when = "Today";
             c.time = "Just now";
             c.title =
@@ -2293,6 +2397,9 @@
             refreshList();
           }
           c.messages.push({ role: "user", text });
+          void persistChat(c).catch(() =>
+            toast("Civra couldn't save this chat. Try again."),
+          );
           if (ta) {
             ta.value = "";
             ta.style.height = "auto";
@@ -2526,6 +2633,10 @@
           }
           const c = S.chats.find((x) => x.id === pending);
           if (c) c.title = v;
+          if (c)
+            void persistChat(c).catch(() =>
+              toast("Civra couldn't save the new name. Try again."),
+            );
           closeModal();
           refreshList();
           if (S.screen === "chat" && S.cur === c) refreshHead();
@@ -2586,6 +2697,12 @@
               runDownload(0);
               break;
             case "startChat":
+              if (invoke)
+                void trackWrite(
+                  invoke("set_setup_complete", { complete: true }),
+                ).catch(() =>
+                  toast("Civra couldn't save setup status. Try again."),
+                );
               S.screen = "chat";
               S.cur = newDraft();
               S.notice = "ready";
@@ -2643,6 +2760,9 @@
               const c = S.chats.find((x) => x.id === pending);
               if (c) {
                 if (S.streaming && S.cur === c) stopStreaming(true);
+                void removeStoredChat(c.id).catch(() =>
+                  toast("Civra couldn't delete this chat. Try again."),
+                );
                 S.chats = S.chats.filter((x) => x !== c);
                 const wasCur = S.cur === c;
                 if (wasCur) S.cur = newDraft();
@@ -2658,6 +2778,9 @@
             }
             case "mDeleteAll": {
               stopStreaming(true);
+              void removeAllStoredChats().catch(() =>
+                toast("Civra couldn't delete saved chats. Try again."),
+              );
               S.chats = [];
               S.cur = newDraft();
               S.query = "";
@@ -2983,9 +3106,17 @@
           }
         });
 
-        syncSel();
-        applyTheme();
-        render();
+        async function initialiseApp() {
+          try {
+            await loadSavedChats();
+          } catch (error) {
+            console.error("Could not load Civra chat history", error);
+          }
+          syncSel();
+          applyTheme();
+          render();
+        }
+        void initialiseApp();
       })();
     </script>
   </body>

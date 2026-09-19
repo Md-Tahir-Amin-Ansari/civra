@@ -44,10 +44,10 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 
 ## Next steps
 
-1. Review and select a final UI direction using the design-neutral functional brief.
-2. Install the Windows Desktop C++ workload and verify a clean native Tauri build.
-3. Build the static first-launch and chat interface before integrating native LiteRT-LM.
-4. Define a versioned approved-artifact manifest and implement verified download.
+1. Replace the simulated setup flow with an approved local-model selection flow.
+2. Integrate LiteRT-LM CPU inference and stream genuine local replies into the existing chat UI.
+3. Define a versioned approved-artifact manifest and implement verified download.
+4. Add context-window tracking and compaction before the 12K-token threshold.
 
 ## Open risks
 
@@ -69,4 +69,8 @@ Detailed source evidence: `C:\personal projects\litert-test\research\feasibility
 - Native build bootstrap: Cargo’s sparse registry metadata route returned a temporary proxy 503, so the official Git-index fallback was used successfully. The Tauri capability configuration referenced an unavailable `opener:default` permission; it now grants only `core:default` until a real opener integration is added.
 - Native desktop shell verified: `cargo build --no-default-features` succeeds and the local `civra-desktop.exe` launches. Generated Tauri schemas are ignored by formatting checks; the generated Cargo lockfile is versioned for reproducible desktop builds.
 - Native-shell visual correction: Civra uses the Windows-provided title bar only; the reference mockup's in-page title bar is hidden. The shell root now fills the native content area with percentage sizing (rather than a constrained stage plus `100vw`), preventing the left gutter and horizontal overflow when maximized.
+- Local-history foundation: Civra now stores chats and messages in a local SQLite database through native Tauri commands. The visible UI loads saved chats into the sidebar at startup while opening a fresh blank chat; it persists send/reply completion, rename, single delete, and delete-all actions. `rusqlite` is bundled, so users do not need a separate SQLite installation. Rust unit tests cover save, load, rename, delete, and message-role validation; LiteRT-LM replies are still simulated.
+- Persistence follow-up in progress: database inspection confirmed that a user chat and reply were written correctly. Startup hydration is being made tolerant of both camelCase and snake_case timestamp payloads so a display-format mismatch cannot prevent a saved chat from rendering.
+- Setup-state correction in progress: setup completion is being persisted separately from chat history. Clearing all chats must never make Civra repeat model setup; the migration treats the current prototype's existing local database as setup-complete, while a truly fresh database still begins at setup.
+- Persistence durability follow-up: an intermittent disappearance report is being treated as a close-race risk even though direct database inspection showed the reported chat was saved. Civra keeps SQLite writes transactional and serializes writes per chat. A frontend native-close interceptor was removed because it trapped the user in the window; a future native close-flush mechanism requires its own integration test before it is reintroduced.
 - UI exploration is intentionally separated from runtime work. `docs/UI-REQUIREMENTS.md` is a neutral, functional source brief for comparing external design concepts before committing to a final visual direction; it intentionally does not prescribe layout or visual style.
