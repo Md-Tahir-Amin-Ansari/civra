@@ -1821,7 +1821,6 @@
         const invoke = window.__TAURI__?.core?.invoke;
         const queuedSaves = new WeakMap();
         const pendingWrites = new Set();
-        let allowingClose = false;
 
         function trackWrite(promise) {
           pendingWrites.add(promise);
@@ -1917,31 +1916,6 @@
         function removeAllStoredChats() {
           if (!invoke) return Promise.resolve();
           return trackWrite(invoke("delete_all_chats"));
-        }
-
-        async function protectPendingWritesOnClose() {
-          const getCurrentWindow = window.__TAURI__?.window?.getCurrentWindow;
-          if (!getCurrentWindow) return;
-          const appWindow = getCurrentWindow();
-          await appWindow.onCloseRequested(async (event) => {
-            if (allowingClose || !pendingWrites.size) return;
-            event.preventDefault();
-            const completed = await Promise.allSettled([...pendingWrites]);
-            if (completed.some((result) => result.status === "rejected")) {
-              toast("Civra couldn't save a recent change. Please try again.");
-              return;
-            }
-            allowingClose = true;
-            // Calling and awaiting close from its own close-request handler can
-            // deadlock the native close cycle. Queue a new request after this
-            // prevented handler has returned instead.
-            setTimeout(() => {
-              void appWindow.close().catch(() => {
-                allowingClose = false;
-                toast("Civra couldn't close safely. Please try again.");
-              });
-            }, 0);
-          });
         }
 
         /* ---------- helpers ---------- */
@@ -3141,7 +3115,6 @@
           syncSel();
           applyTheme();
           render();
-          await protectPendingWritesOnClose();
         }
         void initialiseApp();
       })();
