@@ -1876,7 +1876,7 @@
           S.chats = chats.map(fromStoredChat);
           if (S.chats.length) {
             S.screen = "chat";
-            S.cur = S.chats[0];
+            S.cur = newDraft();
             S.notice = null;
           }
         }
