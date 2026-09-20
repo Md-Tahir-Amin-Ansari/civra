@@ -1022,6 +1022,25 @@
           opacity: 0;
         }
       }
+      .model-spinner {
+        width: 30px;
+        height: 30px;
+        margin: 0 0 18px;
+        border: 3px solid var(--line);
+        border-top-color: var(--accent-text);
+        border-radius: 50%;
+        animation: model-spin 0.8s linear infinite;
+      }
+      @keyframes model-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .model-spinner {
+          animation: none;
+        }
+      }
       .status {
         margin: 10px 0 0;
         font-size: 14.5px;
@@ -2035,7 +2054,7 @@
           const st = S.setup;
           if (invoke) {
             if (st === "verifying" || st === "loading")
-              return `<h2>Checking and starting your model</h2><p class="muted">Civra is verifying the complete file, then loading it on this PC. This may take a minute.</p>`;
+              return `<div class="model-spinner" role="status" aria-label="${st === "verifying" ? "Verifying and loading model" : "Loading model"}"></div><h2>${st === "verifying" ? "Checking and starting your model" : "Starting your private AI"}</h2><p class="muted">${st === "verifying" ? "Civra is verifying this model once, then loading it on this PC." : "Civra is loading your saved model. It is not downloading or checking the full file again."} This may take a minute.</p>`;
             if (st === "ready")
               return `<h2>Civra is ready</h2><div class="alert ok" role="status">${ic("check", 20)}<div><strong>Your model is verified and running locally.</strong></div></div><button class="btn primary lg block" data-act="startChat">Start chatting</button>`;
             return `<h2>Set up Civra</h2><p class="muted">Choose the approved Gemma 4 E2B model file already saved on this PC. Civra will check it before use.</p><p class="muted">No account or network connection is needed for this step.</p>${S.setupError ? `<div class="alert danger" role="alert">${ic("alert", 20)}<div>${esc(S.setupError)}</div></div>` : ""}<button class="btn primary lg block" data-act="chooseModel">${ic("folder", 20)} Choose model file</button>${detailsBlock()}`;
@@ -2521,8 +2540,10 @@
           S.setup = "verifying";
           render();
           try {
-            await invoke("load_native_engine", { modelPath: path });
-            await invoke("set_model_path", { path });
+            await invoke("load_native_engine", {
+              modelPath: path,
+              firstUse: true,
+            });
             await invoke("set_setup_complete", { complete: true });
             S.modelPath = path;
             S.modelReady = true;
@@ -3257,8 +3278,15 @@
               });
             }
             if (S.modelPath) {
-              await invoke("load_native_engine", { modelPath: S.modelPath });
+              S.screen = "setup";
+              S.setup = "loading";
+              render();
+              await invoke("load_native_engine", {
+                modelPath: S.modelPath,
+                firstUse: false,
+              });
               S.modelReady = true;
+              S.screen = "chat";
             }
           } catch (error) {
             console.error("Could not start Civra", error);

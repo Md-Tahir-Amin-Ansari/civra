@@ -377,28 +377,40 @@ struct InferenceFinished {
 }
 
 #[tauri::command]
-pub fn load_native_engine(
+pub async fn load_native_engine(
     app: AppHandle,
     state: State<'_, InferenceState>,
     model_path: String,
+    first_use: bool,
 ) -> Result<(), String> {
-    let verified = crate::model::verify_approved_model(model_path.clone())?;
-    if !verified.valid {
-        return Err(verified.reason.unwrap_or_else(|| {
-            "The selected model did not pass Civra's integrity check.".to_owned()
-        }));
-    }
-    let runtime = NativeRuntime::load(&runtime_path(
-        &app.path()
-            .resource_dir()
-            .map_err(|error| error.to_string())?,
-    ))?;
-    let engine = runtime.create_cpu_engine(Path::new(&model_path), 16_384)?;
-    *state
-        .engine
-        .lock()
-        .map_err(|_| "Civra's local AI engine is busy.")? = Some(engine);
-    Ok(())
+    let engines = state.engine.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        if first_use {
+            let verified = crate::model::verify_approved_model(model_path.clone())?;
+            if !verified.valid {
+                return Err(verified.reason.unwrap_or_else(|| {
+                    "The selected model did not pass Civra's integrity check.".to_owned()
+                }));
+            }
+        } else {
+            crate::storage::check_saved_model(&app, &model_path)?;
+        }
+        let runtime = NativeRuntime::load(&runtime_path(
+            &app.path()
+                .resource_dir()
+                .map_err(|error| error.to_string())?,
+        ))?;
+        let engine = runtime.create_cpu_engine(Path::new(&model_path), 16_384)?;
+        if first_use {
+            crate::storage::remember_verified_model(&app, &model_path)?;
+        }
+        *engines
+            .lock()
+            .map_err(|_| "Civra's local AI engine is busy.")? = Some(engine);
+        Ok(())
+    })
+    .await
+    .map_err(|error| format!("Civra's local AI loader stopped unexpectedly: {error}"))?
 }
 
 #[tauri::command]

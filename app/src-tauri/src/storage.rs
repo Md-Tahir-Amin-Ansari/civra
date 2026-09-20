@@ -2,6 +2,7 @@ use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
 use std::{
     fs,
+    path::Path,
     time::{SystemTime, UNIX_EPOCH},
 };
 use tauri::{AppHandle, Manager};
@@ -134,16 +135,86 @@ fn app_state(connection: &Connection) -> Result<AppState, String> {
     })
 }
 
-#[tauri::command]
-pub fn set_model_path(app: AppHandle, path: String) -> Result<(), String> {
-    let connection = database(&app)?;
-    connection
-        .execute(
-            "INSERT INTO app_state (key, value) VALUES ('model_path', ?1)
-             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-            [path],
+fn model_file_stamp(path: &Path) -> Result<String, String> {
+    let metadata = path
+        .metadata()
+        .map_err(|_| "The saved model file was not found. Select it again.".to_owned())?;
+    if !metadata.is_file() || metadata.len() != crate::model::APPROVED_MODEL_SIZE_BYTES {
+        return Err("The saved model file has changed. Select it again.".to_owned());
+    }
+    let modified = metadata
+        .modified()
+        .and_then(|time| {
+            time.duration_since(UNIX_EPOCH)
+                .map_err(std::io::Error::other)
+        })
+        .map_err(|_| "Civra could not inspect the model file. Select it again.".to_owned())?;
+    Ok(format!("{}:{}", metadata.len(), modified.as_nanos()))
+}
+
+pub fn remember_verified_model(app: &AppHandle, path: &str) -> Result<(), String> {
+    let stamp = model_file_stamp(Path::new(path))?;
+    let mut connection = database(app)?;
+    let transaction = connection
+        .transaction()
+        .map_err(|error| format!("Could not save model verification: {error}"))?;
+    for (key, value) in [("model_path", path), ("model_file_stamp", stamp.as_str())] {
+        transaction
+            .execute(
+                "INSERT INTO app_state (key, value) VALUES (?1, ?2)
+                 ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                [key, value],
+            )
+            .map_err(|error| format!("Could not save model verification: {error}"))?;
+    }
+    transaction
+        .commit()
+        .map_err(|error| format!("Could not save model verification: {error}"))
+}
+
+pub fn check_saved_model(app: &AppHandle, path: &str) -> Result<(), String> {
+    let connection = database(app)?;
+    let stored_path: Option<String> = connection
+        .query_row(
+            "SELECT value FROM app_state WHERE key = 'model_path'",
+            [],
+            |row| row.get(0),
         )
-        .map_err(|error| format!("Could not save Civra model location: {error}"))?;
+        .optional()
+        .map_err(|error| format!("Could not read model location: {error}"))?;
+    if stored_path.as_deref() != Some(path) {
+        return Err("This model has not been verified. Select it again.".to_owned());
+    }
+    if Path::new(path).file_name().and_then(|name| name.to_str())
+        != Some(crate::model::APPROVED_MODEL_FILE_NAME)
+    {
+        return Err("This is not the approved Civra model file.".to_owned());
+    }
+    let stamp = model_file_stamp(Path::new(path))?;
+    let saved_stamp: Option<String> = connection
+        .query_row(
+            "SELECT value FROM app_state WHERE key = 'model_file_stamp'",
+            [],
+            |row| row.get(0),
+        )
+        .optional()
+        .map_err(|error| format!("Could not read model verification: {error}"))?;
+    if let Some(saved_stamp) = saved_stamp {
+        if saved_stamp != stamp {
+            return Err(
+                "The saved model file has changed. Select it again for verification.".to_owned(),
+            );
+        }
+    } else {
+        // Older Civra builds saved this path only after a successful full hash.
+        // Record its present metadata once so future starts can detect changes.
+        connection
+            .execute(
+                "INSERT INTO app_state (key, value) VALUES ('model_file_stamp', ?1)",
+                [stamp],
+            )
+            .map_err(|error| format!("Could not migrate model verification: {error}"))?;
+    }
     Ok(())
 }
 

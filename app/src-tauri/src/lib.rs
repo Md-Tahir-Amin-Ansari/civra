@@ -10,7 +10,6 @@ pub fn run() {
             storage::load_chats,
             storage::load_app_state,
             storage::set_setup_complete,
-            storage::set_model_path,
             storage::save_chat,
             storage::rename_chat,
             storage::delete_chat,
