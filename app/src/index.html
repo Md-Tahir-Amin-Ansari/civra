@@ -998,6 +998,10 @@
         font-size: 16.5px;
         line-height: 1.65;
       }
+      .content.native-stream {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
       .content p {
         margin: 0 0 0.8em;
       }
@@ -1633,6 +1637,7 @@
       </div>
     </div>
 
+    <script src="stream-batcher.js"></script>
     <script>
       (function () {
         "use strict";
@@ -2285,7 +2290,10 @@
           if (m.status === "error") {
             body = `<div class="alert danger" role="alert">${ic("alert", 20)}<div><strong>Civra couldn't finish this reply.</strong><p>The model stopped unexpectedly. This can happen when the PC is low on memory. Your message is saved. Close apps you aren't using, then try again. If it keeps happening, restart Civra.</p></div></div>`;
           } else {
-            body = `<div class="content">${fmt(m.text)}${m.status === "streaming" ? '<span class="caret" aria-hidden="true"></span>' : ""}</div>`;
+            body =
+              m.status === "streaming" && m.native
+                ? `<div class="content native-stream">${esc(m.text)}<span class="caret" aria-hidden="true"></span></div>`
+                : `<div class="content">${fmt(m.text)}${m.status === "streaming" ? '<span class="caret" aria-hidden="true"></span>' : ""}</div>`;
           }
           if (m.status === "streaming")
             body += `<p class="status live">Civra is writing…</p>`;
@@ -2366,6 +2374,18 @@
           const nb = nearBottom();
           el.innerHTML =
             fmt(m.text) + '<span class="caret" aria-hidden="true"></span>';
+          if (nb) scrollBottom();
+        }
+        function appendNativeText(active, delta) {
+          active.m.text += delta;
+          if (S.cur !== active.chat) return;
+          const content = $(
+            "#thread .msg.bot:last-child .content.native-stream",
+          );
+          const caret = content?.querySelector(".caret");
+          if (!caret) return;
+          const nb = nearBottom();
+          content.insertBefore(document.createTextNode(delta), caret);
           if (nb) scrollBottom();
         }
         function startReply(opt) {
@@ -2493,10 +2513,21 @@
               content: message.text,
             }));
           const message = { role: "user", content: last.text };
-          const reply = { role: "bot", text: "", status: "streaming" };
+          const reply = {
+            role: "bot",
+            text: "",
+            status: "streaming",
+            native: true,
+          };
           const requestId = crypto.randomUUID();
           chat.messages.push(reply);
-          S.streaming = { m: reply, chat, requestId };
+          const active = { m: reply, chat, requestId };
+          active.batcher = CivraStreamBatcher(
+            requestAnimationFrame,
+            cancelAnimationFrame,
+            (delta) => appendNativeText(active, delta),
+          );
+          S.streaming = active;
           refreshThread(true);
           announce("Civra is writing a reply.");
           try {
@@ -2512,6 +2543,7 @@
         function finishNativeReply(requestId, error) {
           const active = S.streaming;
           if (!active || active.requestId !== requestId) return;
+          active.batcher.flush();
           active.m.status =
             active.stopRequested || error?.includes("CANCELLED")
               ? "stopped"
@@ -3270,8 +3302,7 @@
               await listen("inference-chunk", ({ payload }) => {
                 const active = S.streaming;
                 if (!active || active.requestId !== payload.requestId) return;
-                active.m.text += nativeText(payload.chunk);
-                if (S.cur === active.chat) tickText(active.m);
+                active.batcher.push(nativeText(payload.chunk));
               });
               await listen("inference-finished", ({ payload }) => {
                 finishNativeReply(payload.requestId, payload.error);

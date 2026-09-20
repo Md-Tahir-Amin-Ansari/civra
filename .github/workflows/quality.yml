@@ -27,6 +27,8 @@ jobs:
         run: npm ci
       - name: Check formatting
         run: npm run format:check
+      - name: Check long-stream batching
+        run: npm run test:stream
       - name: Require current project context
         shell: pwsh
         run: ./scripts/check-context-update.ps1 -BaseRef $env:GITHUB_BASE_REF
