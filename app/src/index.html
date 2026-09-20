@@ -2523,8 +2523,8 @@
           chat.messages.push(reply);
           const active = { m: reply, chat, requestId };
           active.batcher = CivraStreamBatcher(
-            requestAnimationFrame,
-            cancelAnimationFrame,
+            (callback) => requestAnimationFrame(callback),
+            (frameId) => cancelAnimationFrame(frameId),
             (delta) => appendNativeText(active, delta),
           );
           S.streaming = active;
