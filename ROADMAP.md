@@ -8,21 +8,21 @@ This roadmap is intentionally short. It distinguishes a useful weekend MVP from 
 - [x] Define product context, standards, roadmap, and landing README.
 - [x] Initialize local Git and a versioned pre-commit policy.
 - [x] Connect public GitHub repository.
-- [ ] Protect `main` and require CI in GitHub settings.
+- [x] Protect `main` and require CI in GitHub settings.
 - [x] Scaffold the Tauri shell and install its JavaScript dependencies.
-- [ ] Verify a clean Windows build after adding the Desktop C++ workload.
+- [x] Verify a clean Windows build after adding the Desktop C++ workload.
 
 ## Milestone 1 — Local app shell
 
-- [ ] First-launch consent and model-download state UI.
-- [ ] Responsive light/dark chat interface.
+- [~] First-launch consent and model-download state UI (visual flow exists; real downloader remains).
+- [~] Responsive light/dark chat interface (working; scrollbar and Markdown polish tracked separately).
 - [x] Local SQLite session/history layer.
 - [ ] Context-budget and local-compaction plumbing.
 
 ## Milestone 2 — Reliable local inference
 
-- [~] Approved model-artifact manifest and SHA-256 verification (native verification complete; setup flow wiring remains).
-- [ ] LiteRT-LM native bridge, streaming, cancellation, and CPU default.
+- [x] Approved model-artifact manifest and SHA-256 verification for selected local file.
+- [~] LiteRT-LM native bridge, streaming, cancellation, and CPU default (implemented; manual branch acceptance checks remain).
 - [ ] Experimental GPU setting and reliable fallback.
 - [ ] Offline/privacy verification.
 
@@ -37,3 +37,5 @@ This roadmap is intentionally short. It distinguishes a useful weekend MVP from 
 - Resumable downloads and partial-file recovery.
 - Linux packaging and validation.
 - More model choices, encrypted history, app lock, export, attachments, updates, and code signing.
+
+UI improvements and acceptance checks are tracked in [the polish backlog](docs/POLISH-BACKLOG.md).

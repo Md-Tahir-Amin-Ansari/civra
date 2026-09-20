@@ -998,6 +998,10 @@
         font-size: 16.5px;
         line-height: 1.65;
       }
+      .content.native-stream {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
       .content p {
         margin: 0 0 0.8em;
       }
@@ -1020,6 +1024,25 @@
       @keyframes blink {
         50% {
           opacity: 0;
+        }
+      }
+      .model-spinner {
+        width: 30px;
+        height: 30px;
+        margin: 0 0 18px;
+        border: 3px solid var(--line);
+        border-top-color: var(--accent-text);
+        border-radius: 50%;
+        animation: model-spin 0.8s linear infinite;
+      }
+      @keyframes model-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .model-spinner {
+          animation: none;
         }
       }
       .status {
@@ -1614,6 +1637,7 @@
       </div>
     </div>
 
+    <script src="stream-batcher.js"></script>
     <script>
       (function () {
         "use strict";
@@ -1813,12 +1837,16 @@
           drawer: false,
           notice: null,
           streaming: null,
+          modelPath: null,
+          modelReady: false,
+          setupError: null,
           nextId: 100,
         };
         const T = { dl: null, ver: null, gpu: null, toast: null };
         let lastFocus = null,
           pending = null;
         const invoke = window.__TAURI__?.core?.invoke;
+        const listen = window.__TAURI__?.event?.listen;
         const queuedSaves = new WeakMap();
         const pendingWrites = new Set();
 
@@ -1887,10 +1915,14 @@
             invoke("load_app_state"),
           ]);
           S.chats = chats.map(fromStoredChat);
-          if (appState.setupComplete) {
+          S.modelPath = appState.modelPath || null;
+          if (appState.setupComplete && S.modelPath) {
             S.screen = "chat";
             S.cur = newDraft();
             S.notice = null;
+          } else {
+            S.screen = "setup";
+            S.setup = "consent";
           }
         }
         function persistChat(chat) {
@@ -2010,6 +2042,8 @@
             .join("")}</ol>`;
         }
         function detailsBlock(extra) {
+          if (invoke)
+            return `<button class="link" data-act="toggleDetails" aria-expanded="${S.detailsOpen}" aria-controls="tech">${ic("chevron", 16)} Details</button><div id="tech" class="tech"${S.detailsOpen ? "" : " hidden"}><dl><div><dt>Approved file</dt><dd>gemma-4-E2B-it.litertlm</dd></div><div><dt>Size</dt><dd>About 2.4 GB</dd></div><div><dt>File check</dt><dd>SHA-256 checksum</dd></div><div><dt>Runs on</dt><dd>CPU</dd></div>${S.modelPath ? `<div><dt>Location</dt><dd>${esc(S.modelPath)}</dd></div>` : ""}${extra || ""}</dl></div>`;
           return `<button class="link" data-act="toggleDetails" aria-expanded="${S.detailsOpen}" aria-controls="tech">${ic("chevron", 16)} Details</button>
   <div id="tech" class="tech"${S.detailsOpen ? "" : " hidden"}><dl>
     <div><dt>Model file</dt><dd>civra-model.litertlm</dd></div>
@@ -2023,6 +2057,13 @@
         }
         function setupCard() {
           const st = S.setup;
+          if (invoke) {
+            if (st === "verifying" || st === "loading")
+              return `<div class="model-spinner" role="status" aria-label="${st === "verifying" ? "Verifying and loading model" : "Loading model"}"></div><h2>${st === "verifying" ? "Checking and starting your model" : "Starting your private AI"}</h2><p class="muted">${st === "verifying" ? "Civra is verifying this model once, then loading it on this PC." : "Civra is loading your saved model. It is not downloading or checking the full file again."} This may take a minute.</p>`;
+            if (st === "ready")
+              return `<h2>Civra is ready</h2><div class="alert ok" role="status">${ic("check", 20)}<div><strong>Your model is verified and running locally.</strong></div></div><button class="btn primary lg block" data-act="startChat">Start chatting</button>`;
+            return `<h2>Set up Civra</h2><p class="muted">Choose the approved Gemma 4 E2B model file already saved on this PC. Civra will check it before use.</p><p class="muted">No account or network connection is needed for this step.</p>${S.setupError ? `<div class="alert danger" role="alert">${ic("alert", 20)}<div>${esc(S.setupError)}</div></div>` : ""}<button class="btn primary lg block" data-act="chooseModel">${ic("folder", 20)} Choose model file</button>${detailsBlock()}`;
+          }
           if (st === "consent") {
             return `${stepper(1)}
     <h2>Set up Civra</h2>
@@ -2249,7 +2290,10 @@
           if (m.status === "error") {
             body = `<div class="alert danger" role="alert">${ic("alert", 20)}<div><strong>Civra couldn't finish this reply.</strong><p>The model stopped unexpectedly. This can happen when the PC is low on memory. Your message is saved. Close apps you aren't using, then try again. If it keeps happening, restart Civra.</p></div></div>`;
           } else {
-            body = `<div class="content">${fmt(m.text)}${m.status === "streaming" ? '<span class="caret" aria-hidden="true"></span>' : ""}</div>`;
+            body =
+              m.status === "streaming" && m.native
+                ? `<div class="content native-stream">${esc(m.text)}<span class="caret" aria-hidden="true"></span></div>`
+                : `<div class="content">${fmt(m.text)}${m.status === "streaming" ? '<span class="caret" aria-hidden="true"></span>' : ""}</div>`;
           }
           if (m.status === "streaming")
             body += `<p class="status live">Civra is writing…</p>`;
@@ -2332,7 +2376,23 @@
             fmt(m.text) + '<span class="caret" aria-hidden="true"></span>';
           if (nb) scrollBottom();
         }
+        function appendNativeText(active, delta) {
+          active.m.text += delta;
+          if (S.cur !== active.chat) return;
+          const content = $(
+            "#thread .msg.bot:last-child .content.native-stream",
+          );
+          const caret = content?.querySelector(".caret");
+          if (!caret) return;
+          const nb = nearBottom();
+          content.insertBefore(document.createTextNode(delta), caret);
+          if (nb) scrollBottom();
+        }
         function startReply(opt) {
+          if (invoke) {
+            void startNativeReply();
+            return;
+          }
           opt = opt || {};
           const c = S.cur;
           const lastUser = [...c.messages]
@@ -2369,6 +2429,14 @@
         }
         function stopStreaming(silent) {
           if (!S.streaming) return;
+          if (S.streaming.requestId) {
+            S.streaming.stopRequested = true;
+            void invoke("cancel_native_reply").catch((error) =>
+              toast(String(error)),
+            );
+            if (!silent) announce("Stopping reply.");
+            return;
+          }
           clearInterval(S.streaming.timer);
           S.streaming.m.status = "stopped";
           void persistChat(S.cur).catch(() =>
@@ -2386,6 +2454,10 @@
           const ta = $("#msg");
           text = (text !== undefined ? text : ta ? ta.value : "").trim();
           if (!text || S.streaming) return;
+          if (invoke && !S.modelReady) {
+            toast("The local model is not ready. Select it in setup first.");
+            return;
+          }
           const c = S.cur;
           if (c.id === null) {
             c.when = "Today";
@@ -2415,6 +2487,105 @@
           if (!last || last.role !== "bot") return;
           ms.pop();
           startReply();
+        }
+        function nativeText(chunk) {
+          try {
+            const response = JSON.parse(chunk);
+            return (response.content || [])
+              .filter((part) => part.type === "text")
+              .map((part) => part.text || "")
+              .join("");
+          } catch {
+            return chunk;
+          }
+        }
+        async function startNativeReply() {
+          const chat = S.cur;
+          const last = chat.messages[chat.messages.length - 1];
+          if (!last || last.role !== "user") return;
+          const history = chat.messages
+            .slice(0, -1)
+            .filter(
+              (message) => message.status === "done" || message.role === "user",
+            )
+            .map((message) => ({
+              role: message.role === "bot" ? "model" : "user",
+              content: message.text,
+            }));
+          const message = { role: "user", content: last.text };
+          const reply = {
+            role: "bot",
+            text: "",
+            status: "streaming",
+            native: true,
+          };
+          const requestId = crypto.randomUUID();
+          chat.messages.push(reply);
+          const active = { m: reply, chat, requestId };
+          active.batcher = CivraStreamBatcher(
+            (callback) => requestAnimationFrame(callback),
+            (frameId) => cancelAnimationFrame(frameId),
+            (delta) => appendNativeText(active, delta),
+          );
+          S.streaming = active;
+          refreshThread(true);
+          announce("Civra is writing a reply.");
+          try {
+            await invoke("stream_native_reply", {
+              requestId,
+              historyJson: JSON.stringify(history),
+              messageJson: JSON.stringify(message),
+            });
+          } catch (error) {
+            finishNativeReply(requestId, String(error));
+          }
+        }
+        function finishNativeReply(requestId, error) {
+          const active = S.streaming;
+          if (!active || active.requestId !== requestId) return;
+          active.batcher.flush();
+          active.m.status =
+            active.stopRequested || error?.includes("CANCELLED")
+              ? "stopped"
+              : error
+                ? "error"
+                : "done";
+          S.streaming = null;
+          void persistChat(active.chat).catch(() =>
+            toast("Civra couldn't save this chat. Try again."),
+          );
+          if (S.cur === active.chat) refreshThread();
+          if (error && !active.stopRequested) toast(error);
+          announce(
+            active.stopRequested
+              ? "Reply stopped."
+              : error
+                ? "Reply failed."
+                : "Reply finished.",
+          );
+        }
+        async function chooseModel() {
+          if (!invoke) return;
+          S.setupError = null;
+          const path = await invoke("choose_approved_model");
+          if (!path) return;
+          S.setup = "verifying";
+          render();
+          try {
+            await invoke("load_native_engine", {
+              modelPath: path,
+              firstUse: true,
+            });
+            await invoke("set_setup_complete", { complete: true });
+            S.modelPath = path;
+            S.modelReady = true;
+            S.setup = "ready";
+            render();
+          } catch (error) {
+            S.setupError = String(error);
+            S.setup = "consent";
+            render();
+          }
         }
         async function copyText(t) {
           try {
@@ -2450,7 +2621,7 @@
           return `<p class="muted">Currently using: <strong>${modeLabel()}</strong></p>`;
         }
         function settingsHTML() {
-          const none = S.gpuSim === "none",
+          const none = Boolean(invoke) || S.gpuSim === "none",
             n = S.chats.length;
           return `<div class="settings"><div class="settings-inner">
     <button class="btn sm" data-act="backToChat">${ic("back", 16)} Back to chat</button>
@@ -2472,14 +2643,14 @@
       <p class="muted">Choose how the model runs on this PC. You can change this at any time.</p>
       <fieldset><legend class="sr-only">Run mode</legend><div class="stack">
         <label class="choice"><input type="radio" name="mode" value="cpu"${S.mode === "cpu" ? " checked" : ""}><span><strong>Standard<span class="tag">Recommended</span></strong><span class="d">Works reliably on most PCs. Uses your computer's processor.</span></span></label>
-        <label class="choice${none ? " disabled" : ""}"><input type="radio" name="mode" value="gpu"${S.mode === "gpu" ? " checked" : ""}${none ? " disabled" : ""}><span><strong>Use graphics card<span class="tag w">Experimental</span></strong><span class="d">May be faster on some PCs, but it can be less stable. If it doesn't work, Civra switches back to Standard automatically.</span>${none ? `<span class="d w">Not available on this PC. Civra couldn't find a compatible graphics card.</span>` : ""}</span></label>
+        <label class="choice${none ? " disabled" : ""}"><input type="radio" name="mode" value="gpu"${S.mode === "gpu" ? " checked" : ""}${none ? " disabled" : ""}><span><strong>Use graphics card<span class="tag w">Experimental</span></strong><span class="d">May be faster on some PCs, but it can be less stable.</span>${none ? `<span class="d w">${invoke ? "Coming after the CPU release." : "Not available on this PC."}</span>` : ""}</span></label>
       </div></fieldset>
       <div id="gpuStatus" aria-live="polite">${gpuStatusHTML()}</div></section>
     <section class="set" aria-labelledby="s-hist"><h2 id="s-hist">Chat history</h2>
       <p>${n ? `${n} ${n === 1 ? "chat is" : "chats are"} saved on this PC. Civra doesn't upload them.` : "No chats are saved on this PC."}</p>
       <button class="btn danger-o" data-act="delAll"${n ? "" : " disabled"}>${ic("trash", 16)} Delete all chats…</button></section>
     <section class="set" aria-labelledby="s-model"><h2 id="s-model">Model</h2>
-      <p>Installed · about 2.4 GB. Stored on this PC.</p>
+      <p>${S.modelReady ? "Approved model verified and running on this PC." : "No verified model is running."}</p>
       <div class="row"><button class="btn" data-act="checkModel">Check model file</button><span id="modelCheck" role="status" class="muted"></span></div>
       ${detailsBlock()}</section>
     <section class="set" aria-labelledby="s-priv"><h2 id="s-priv">Privacy and safety</h2>
@@ -2679,6 +2850,9 @@
               S.outcome = $("#outSel").value;
               runDownload(0);
               break;
+            case "chooseModel":
+              void chooseModel();
+              break;
             case "cancelDownload":
               clearTimers();
               S.setup = "consent";
@@ -2829,6 +3003,21 @@
             case "checkModel": {
               const s = $("#modelCheck");
               s.textContent = "Checking…";
+              if (invoke) {
+                void invoke("verify_approved_model", {
+                  path: S.modelPath || "",
+                })
+                  .then((result) => {
+                    if (s.isConnected)
+                      s.textContent = result.valid
+                        ? "The approved model file is complete and unchanged."
+                        : result.reason;
+                  })
+                  .catch((error) => {
+                    if (s.isConnected) s.textContent = String(error);
+                  });
+                break;
+              }
               setTimeout(() => {
                 if (s.isConnected)
                   s.innerHTML =
@@ -3109,8 +3298,33 @@
         async function initialiseApp() {
           try {
             await loadSavedChats();
+            if (listen) {
+              await listen("inference-chunk", ({ payload }) => {
+                const active = S.streaming;
+                if (!active || active.requestId !== payload.requestId) return;
+                active.batcher.push(nativeText(payload.chunk));
+              });
+              await listen("inference-finished", ({ payload }) => {
+                finishNativeReply(payload.requestId, payload.error);
+              });
+            }
+            if (S.modelPath) {
+              S.screen = "setup";
+              S.setup = "loading";
+              render();
+              await invoke("load_native_engine", {
+                modelPath: S.modelPath,
+                firstUse: false,
+              });
+              S.modelReady = true;
+              S.screen = "chat";
+            }
           } catch (error) {
-            console.error("Could not load Civra chat history", error);
+            console.error("Could not start Civra", error);
+            S.modelReady = false;
+            S.setupError = String(error);
+            S.screen = "setup";
+            S.setup = "consent";
           }
           syncSel();
           applyTheme();
