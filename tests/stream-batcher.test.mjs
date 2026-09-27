@@ -1,15 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { runInNewContext } from "node:vm";
-
-const source = readFileSync(
-  new URL("../app/src/stream-batcher.js", import.meta.url),
-  "utf8",
-);
-const scope = {};
-runInNewContext(source, scope);
-const createStreamBatcher = scope.CivraStreamBatcher;
+import { createStreamBatcher } from "../app/src/stream-batcher.js";
 
 function frameClock() {
   let nextId = 0;
@@ -70,15 +62,19 @@ test("finishing flushes the pending tail without duplicating it", () => {
 });
 
 test("native chunk wiring stays append-only rather than redrawing each chunk", () => {
-  const page = readFileSync(
-    new URL("../app/src/index.html", import.meta.url),
+  const main = readFileSync(
+    new URL("../app/src/main.js", import.meta.url),
     "utf8",
   );
-  const listener = page.match(
+  const views = readFileSync(
+    new URL("../app/src/chat-view.js", import.meta.url),
+    "utf8",
+  );
+  const listener = main.match(
     /await listen\("inference-chunk", \(\{ payload \}\) => \{([\s\S]*?)\n\s*\}\);/,
   )?.[1];
-  const appender = page.match(
-    /function appendNativeText\(active, delta\) \{([\s\S]*?)\n\s*\}\n\s*function startReply/,
+  const appender = views.match(
+    /function appendNativeText\(active, delta\) \{([\s\S]*?)\n\s*\}\n\s*return \{/,
   )?.[1];
 
   assert.ok(listener, "native chunk listener must be present");

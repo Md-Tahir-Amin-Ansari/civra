@@ -4,7 +4,7 @@ Civra is a Windows-first, open-source desktop chat app for running a curated AI 
 
 ## Project status
 
-Milestone 0: project foundations. Civra is not yet usable or released.
+The local development build supports private CPU chat, streaming replies, and saved history. It is not released: the model downloader and installer are still unfinished.
 
 ## What Civra will do
 
@@ -28,6 +28,7 @@ Local processing does not protect against malware, device users, backups, or an 
 - [Current project context](CONTEXT.md)
 - [Engineering and agent standards](STANDARDS.md)
 - [Roadmap](ROADMAP.md)
+- [Desktop frontend structure](app/README.md)
 - [GitHub setup and protected-main policy](docs/GITHUB-SETUP.md)
 
 ## License
