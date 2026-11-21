@@ -1,3 +1,4 @@
+mod context;
 mod model;
 mod runtime;
 mod storage;
@@ -7,6 +8,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(runtime::inference_state())
         .invoke_handler(tauri::generate_handler![
+            context::inspect_context_budget,
             storage::load_chats,
             storage::load_app_state,
             storage::set_setup_complete,

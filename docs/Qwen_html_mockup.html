@@ -1,0 +1,2602 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Civra — Private Offline AI Chat</title>
+    <style>
+      /* ===== RESET & BASE ===== */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f4f5f7;
+        --bg-tertiary: #e8eaed;
+        --bg-sidebar: #f0f1f3;
+        --bg-input: #ffffff;
+        --bg-bubble-user: #dbeafe;
+        --bg-bubble-ai: #f3f4f6;
+        --bg-hover: #e5e7eb;
+        --bg-card: #ffffff;
+        --bg-overlay: rgba(0, 0, 0, 0.4);
+        --bg-progress: #e5e7eb;
+        --bg-progress-fill: #2563eb;
+        --text-primary: #111827;
+        --text-secondary: #4b5563;
+        --text-tertiary: #6b7280;
+        --text-on-accent: #ffffff;
+        --text-link: #2563eb;
+        --border-color: #d1d5db;
+        --border-focus: #2563eb;
+        --accent: #2563eb;
+        --accent-hover: #1d4ed8;
+        --accent-light: #dbeafe;
+        --danger: #dc2626;
+        --danger-hover: #b91c1c;
+        --danger-light: #fee2e2;
+        --warning: #d97706;
+        --warning-light: #fef3c7;
+        --success: #059669;
+        --success-light: #d1fae5;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+        --radius: 8px;
+        --radius-lg: 12px;
+        --radius-sm: 4px;
+        --font-sans:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        --font-mono: "Cascadia Code", "Fira Code", Consolas, monospace;
+        --sidebar-width: 264px;
+        --transition: 0.2s ease;
+      }
+      [data-theme="dark"] {
+        --bg-primary: #111827;
+        --bg-secondary: #1f2937;
+        --bg-tertiary: #374151;
+        --bg-sidebar: #0f172a;
+        --bg-input: #1f2937;
+        --bg-bubble-user: #1e3a5f;
+        --bg-bubble-ai: #1f2937;
+        --bg-hover: #374151;
+        --bg-card: #1f2937;
+        --bg-overlay: rgba(0, 0, 0, 0.6);
+        --bg-progress: #374151;
+        --bg-progress-fill: #3b82f6;
+        --text-primary: #f3f4f6;
+        --text-secondary: #d1d5db;
+        --text-tertiary: #9ca3af;
+        --text-on-accent: #ffffff;
+        --text-link: #60a5fa;
+        --border-color: #374151;
+        --border-focus: #3b82f6;
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --accent-light: #1e3a5f;
+        --danger: #ef4444;
+        --danger-hover: #dc2626;
+        --danger-light: #451a1a;
+        --warning: #f59e0b;
+        --warning-light: #451a03;
+        --success: #10b981;
+        --success-light: #064e3b;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.4);
+      }
+      html {
+        font-size: 15px;
+      }
+      body {
+        font-family: var(--font-sans);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        line-height: 1.5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      button {
+        font-family: inherit;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-size: inherit;
+        color: inherit;
+      }
+      input,
+      textarea {
+        font-family: inherit;
+        font-size: inherit;
+        color: var(--text-primary);
+        background: var(--bg-input);
+      }
+      :focus-visible {
+        outline: 2px solid var(--border-focus);
+        outline-offset: 2px;
+        border-radius: var(--radius-sm);
+      }
+      a {
+        color: var(--text-link);
+        text-decoration: underline;
+      }
+      ::selection {
+        background: var(--accent);
+        color: #fff;
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 3px;
+      }
+
+      /* ===== LAYOUT ===== */
+      #app {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+        max-width: 1400px;
+        margin: 0 auto;
+        position: relative;
+      }
+      #sidebar {
+        width: var(--sidebar-width);
+        min-width: var(--sidebar-width);
+        background: var(--bg-sidebar);
+        border-right: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        transition: transform var(--transition);
+      }
+      #main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        min-width: 0;
+        position: relative;
+      }
+
+      /* ===== SIDEBAR ===== */
+      .sidebar-header {
+        padding: 16px;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .sidebar-header h1 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .sidebar-header h1 svg {
+        flex-shrink: 0;
+      }
+      .sidebar-header .subtitle {
+        font-size: 0.73rem;
+        color: var(--text-tertiary);
+        margin-top: 2px;
+      }
+      .btn-new-chat {
+        width: 100%;
+        margin-top: 12px;
+        padding: 10px 14px;
+        background: var(--accent);
+        color: var(--text-on-accent);
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background var(--transition);
+      }
+      .btn-new-chat:hover {
+        background: var(--accent-hover);
+      }
+      .sidebar-search {
+        padding: 12px 16px 8px;
+      }
+      .sidebar-search input {
+        width: 100%;
+        padding: 8px 12px 8px 34px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        background: var(--bg-input);
+        font-size: 0.85rem;
+        transition: border var(--transition);
+      }
+      .sidebar-search input:focus {
+        border-color: var(--border-focus);
+      }
+      .search-wrap {
+        position: relative;
+      }
+      .search-wrap svg {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-tertiary);
+      }
+      .chat-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 4px 8px;
+      }
+      .chat-item {
+        padding: 10px 12px;
+        border-radius: var(--radius);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        transition: background var(--transition);
+        margin-bottom: 2px;
+        border: 1px solid transparent;
+      }
+      .chat-item:hover,
+      .chat-item.active {
+        background: var(--bg-hover);
+      }
+      .chat-item.active {
+        border-color: var(--border-color);
+      }
+      .chat-item-title {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.87rem;
+      }
+      .chat-item-title input {
+        width: 100%;
+        padding: 2px 4px;
+        border: 1px solid var(--border-focus);
+        border-radius: var(--radius-sm);
+        background: var(--bg-input);
+        font-size: 0.87rem;
+      }
+      .chat-item-actions {
+        display: flex;
+        gap: 2px;
+        opacity: 0;
+        transition: opacity var(--transition);
+      }
+      .chat-item:hover .chat-item-actions,
+      .chat-item:focus-within .chat-item-actions {
+        opacity: 1;
+      }
+      .chat-item-actions button {
+        padding: 4px 6px;
+        border-radius: var(--radius-sm);
+        color: var(--text-tertiary);
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        transition: all var(--transition);
+      }
+      .chat-item-actions button:hover {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+      }
+      .chat-item-actions button.danger-btn:hover {
+        color: var(--danger);
+        background: var(--danger-light);
+      }
+      .sidebar-footer {
+        padding: 12px 16px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .sidebar-footer button {
+        padding: 8px 12px;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.87rem;
+        color: var(--text-secondary);
+        transition: all var(--transition);
+        width: 100%;
+        text-align: left;
+      }
+      .sidebar-footer button:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+      }
+      .sidebar-footer button svg {
+        flex-shrink: 0;
+      }
+
+      /* ===== MAIN HEADER ===== */
+      .main-header {
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 52px;
+        background: var(--bg-primary);
+      }
+      .main-header .chat-title {
+        font-weight: 600;
+        font-size: 1rem;
+      }
+      .main-header .status-badge {
+        font-size: 0.73rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .status-badge.offline {
+        background: var(--success-light);
+        color: var(--success);
+      }
+      .status-badge.gpu-warn {
+        background: var(--warning-light);
+        color: var(--warning);
+      }
+      .header-actions {
+        display: flex;
+        gap: 6px;
+      }
+      .header-actions button {
+        padding: 6px 10px;
+        border-radius: var(--radius);
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--text-secondary);
+        transition: all var(--transition);
+      }
+      .header-actions button:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+      }
+
+      /* ===== CHAT AREA ===== */
+      .chat-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+      }
+      .chat-empty {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 40px;
+        color: var(--text-secondary);
+      }
+      .chat-empty svg {
+        margin-bottom: 16px;
+        color: var(--text-tertiary);
+      }
+      .chat-empty h2 {
+        font-size: 1.2rem;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+      }
+      .chat-empty p {
+        max-width: 420px;
+        font-size: 0.9rem;
+        line-height: 1.6;
+      }
+      .chat-empty .disclaimer {
+        margin-top: 20px;
+        font-size: 0.78rem;
+        color: var(--text-tertiary);
+        max-width: 400px;
+        padding: 12px;
+        background: var(--bg-secondary);
+        border-radius: var(--radius);
+      }
+      .messages {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 720px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      .message {
+        display: flex;
+        gap: 12px;
+        animation: fadeIn 0.3s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .message.user {
+        flex-direction: row-reverse;
+      }
+      .msg-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+      .message.user .msg-avatar {
+        background: var(--accent);
+        color: #fff;
+      }
+      .message.assistant .msg-avatar {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+      }
+      .msg-content {
+        max-width: 85%;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .msg-bubble {
+        padding: 12px 16px;
+        border-radius: var(--radius-lg);
+        font-size: 0.92rem;
+        line-height: 1.6;
+        word-wrap: break-word;
+      }
+      .message.user .msg-bubble {
+        background: var(--bg-bubble-user);
+        border-bottom-right-radius: var(--radius-sm);
+      }
+      .message.assistant .msg-bubble {
+        background: var(--bg-bubble-ai);
+        border-bottom-left-radius: var(--radius-sm);
+      }
+      .msg-actions {
+        display: flex;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity var(--transition);
+      }
+      .message:hover .msg-actions {
+        opacity: 1;
+      }
+      .msg-actions button {
+        padding: 4px 8px;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        color: var(--text-tertiary);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all var(--transition);
+      }
+      .msg-actions button:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+      }
+      .msg-stopped {
+        font-size: 0.78rem;
+        color: var(--text-tertiary);
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .cursor-blink {
+        display: inline-block;
+        width: 2px;
+        height: 1em;
+        background: var(--text-primary);
+        animation: blink 0.8s step-end infinite;
+        vertical-align: text-bottom;
+        margin-left: 2px;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* ===== INPUT AREA ===== */
+      .input-area {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border-color);
+        background: var(--bg-primary);
+      }
+      .input-wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+      }
+      .input-wrap textarea {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        resize: none;
+        min-height: 48px;
+        max-height: 160px;
+        line-height: 1.5;
+        transition: border var(--transition);
+      }
+      .input-wrap textarea:focus {
+        border-color: var(--border-focus);
+      }
+      .input-wrap textarea::placeholder {
+        color: var(--text-tertiary);
+      }
+      .btn-send {
+        padding: 12px 16px;
+        background: var(--accent);
+        color: var(--text-on-accent);
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background var(--transition);
+        align-self: flex-end;
+        height: 48px;
+      }
+      .btn-send:hover {
+        background: var(--accent-hover);
+      }
+      .btn-send:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn-stop {
+        padding: 12px 16px;
+        background: var(--danger);
+        color: #fff;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background var(--transition);
+        align-self: flex-end;
+        height: 48px;
+      }
+      .btn-stop:hover {
+        background: var(--danger-hover);
+      }
+
+      /* ===== SETUP SCREENS ===== */
+      .setup-overlay {
+        position: fixed;
+        inset: 0;
+        background: var(--bg-primary);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .setup-card {
+        max-width: 560px;
+        width: 100%;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 40px;
+        box-shadow: var(--shadow-lg);
+        text-align: center;
+      }
+      .setup-card h2 {
+        font-size: 1.35rem;
+        margin-bottom: 8px;
+      }
+      .setup-card .lead {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+        line-height: 1.6;
+      }
+      .setup-card .info-list {
+        text-align: left;
+        margin: 0 auto 24px;
+        max-width: 420px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .info-item {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+      }
+      .info-item svg {
+        flex-shrink: 0;
+        margin-top: 2px;
+        color: var(--accent);
+      }
+      .setup-card .disclaimer-box {
+        background: var(--bg-secondary);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        color: var(--text-tertiary);
+        text-align: left;
+        margin-bottom: 24px;
+        line-height: 1.55;
+      }
+      .btn-primary {
+        padding: 12px 28px;
+        background: var(--accent);
+        color: var(--text-on-accent);
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: background var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-primary:hover {
+        background: var(--accent-hover);
+      }
+      .btn-secondary {
+        padding: 10px 20px;
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border-radius: var(--radius);
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn-secondary:hover {
+        background: var(--bg-hover);
+      }
+      .btn-danger {
+        padding: 10px 20px;
+        background: var(--danger);
+        color: #fff;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: background var(--transition);
+      }
+      .btn-danger:hover {
+        background: var(--danger-hover);
+      }
+      .btn-text {
+        padding: 6px 12px;
+        color: var(--text-link);
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-radius: var(--radius-sm);
+        transition: background var(--transition);
+      }
+      .btn-text:hover {
+        background: var(--accent-light);
+      }
+      .setup-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      /* Progress */
+      .progress-section {
+        margin: 24px 0;
+      }
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: var(--bg-progress);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 8px;
+      }
+      .progress-fill {
+        height: 100%;
+        background: var(--bg-progress-fill);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+      }
+      .progress-text {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        display: flex;
+        justify-content: space-between;
+      }
+
+      /* Error state */
+      .error-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--danger-light);
+        color: var(--danger);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+      }
+      .warning-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--warning-light);
+        color: var(--warning);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+      }
+      .success-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--success-light);
+        color: var(--success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+      }
+
+      /* Details expandable */
+      .details-toggle {
+        margin-top: 16px;
+      }
+      .details-content {
+        margin-top: 12px;
+        text-align: left;
+        background: var(--bg-secondary);
+        padding: 14px 16px;
+        border-radius: var(--radius);
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        display: none;
+      }
+      .details-content.open {
+        display: block;
+      }
+      .details-content dt {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-top: 8px;
+      }
+      .details-content dt:first-child {
+        margin-top: 0;
+      }
+      .details-content dd {
+        margin-left: 0;
+      }
+
+      /* ===== MODAL / DIALOG ===== */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: var(--bg-overlay);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 0.15s ease;
+      }
+      .modal {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 28px;
+        max-width: 480px;
+        width: 100%;
+        box-shadow: var(--shadow-lg);
+      }
+      .modal h3 {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+      }
+      .modal p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+        line-height: 1.55;
+      }
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      /* ===== SETTINGS ===== */
+      .settings-panel {
+        position: fixed;
+        inset: 0;
+        z-index: 150;
+        display: flex;
+      }
+      .settings-backdrop {
+        position: absolute;
+        inset: 0;
+        background: var(--bg-overlay);
+      }
+      .settings-content {
+        position: relative;
+        margin-left: auto;
+        width: 420px;
+        max-width: 100%;
+        background: var(--bg-card);
+        height: 100%;
+        overflow-y: auto;
+        box-shadow: var(--shadow-lg);
+        animation: slideIn 0.2s ease;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+      .settings-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .settings-header h2 {
+        font-size: 1.15rem;
+      }
+      .settings-body {
+        padding: 24px;
+      }
+      .settings-section {
+        margin-bottom: 28px;
+      }
+      .settings-section h3 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-tertiary);
+        margin-bottom: 12px;
+      }
+      .setting-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .setting-row:last-child {
+        border-bottom: none;
+      }
+      .setting-label {
+        font-size: 0.92rem;
+      }
+      .setting-desc {
+        font-size: 0.8rem;
+        color: var(--text-tertiary);
+        margin-top: 2px;
+      }
+      /* Toggle switch */
+      .toggle {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+      .toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+      .toggle .slider {
+        position: absolute;
+        inset: 0;
+        background: var(--bg-tertiary);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background var(--transition);
+      }
+      .toggle .slider::before {
+        content: "";
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        left: 3px;
+        bottom: 3px;
+        background: #fff;
+        border-radius: 50%;
+        transition: transform var(--transition);
+      }
+      .toggle input:checked + .slider {
+        background: var(--accent);
+      }
+      .toggle input:checked + .slider::before {
+        transform: translateX(20px);
+      }
+      .toggle input:focus-visible + .slider {
+        outline: 2px solid var(--border-focus);
+        outline-offset: 2px;
+      }
+      /* Radio group */
+      .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      .radio-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: all var(--transition);
+      }
+      .radio-option:hover {
+        background: var(--bg-hover);
+      }
+      .radio-option.selected {
+        border-color: var(--accent);
+        background: var(--accent-light);
+      }
+      .radio-option input[type="radio"] {
+        margin-top: 3px;
+        accent-color: var(--accent);
+      }
+      .radio-option .radio-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+      .radio-option .radio-desc {
+        font-size: 0.8rem;
+        color: var(--text-tertiary);
+        margin-top: 2px;
+      }
+      .radio-option .radio-badge {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 600;
+        margin-left: 6px;
+      }
+      .badge-exp {
+        background: var(--warning-light);
+        color: var(--warning);
+      }
+      .gpu-error-msg {
+        margin-top: 10px;
+        padding: 10px 12px;
+        background: var(--danger-light);
+        color: var(--danger);
+        border-radius: var(--radius);
+        font-size: 0.83rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .gpu-error-msg svg {
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      /* ===== MOCKUP NAVIGATOR ===== */
+      .mockup-nav {
+        position: fixed;
+        bottom: 12px;
+        right: 12px;
+        z-index: 999;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        font-size: 0.78rem;
+        max-width: 280px;
+      }
+      .mockup-nav summary {
+        padding: 8px 14px;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        user-select: none;
+      }
+      .mockup-nav .nav-body {
+        padding: 8px 14px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .mockup-nav button {
+        padding: 5px 10px;
+        text-align: left;
+        border-radius: var(--radius-sm);
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        transition: all var(--transition);
+      }
+      .mockup-nav button:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+      }
+      .mockup-nav button.active-state {
+        background: var(--accent-light);
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .mockup-nav hr {
+        border: none;
+        border-top: 1px solid var(--border-color);
+        margin: 4px 0;
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 800px) {
+        #sidebar {
+          position: fixed;
+          left: 0;
+          top: 0;
+          z-index: 50;
+          transform: translateX(-100%);
+        }
+        #sidebar.open {
+          transform: translateX(0);
+        }
+        .sidebar-toggle {
+          display: flex !important;
+        }
+      }
+      .sidebar-toggle {
+        display: none;
+        padding: 6px 10px;
+        border-radius: var(--radius);
+        color: var(--text-secondary);
+      }
+      .sidebar-toggle:hover {
+        background: var(--bg-hover);
+      }
+
+      /* ===== HIDDEN ===== */
+      .hidden {
+        display: none !important;
+      }
+
+      /* ===== TOAST ===== */
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        padding: 10px 20px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        font-size: 0.87rem;
+        z-index: 300;
+        animation: fadeIn 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ==================== SETUP OVERLAY ==================== -->
+    <div id="setupOverlay" class="setup-overlay">
+      <!-- STATE: Consent -->
+      <div id="setupConsent" class="setup-card">
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          style="color: var(--accent); margin-bottom: 12px"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0110 0v4" />
+        </svg>
+        <h2>Welcome to Civra</h2>
+        <p class="lead">
+          Private, offline AI chat that runs entirely on your computer.
+        </p>
+        <div class="info-list">
+          <div class="info-item">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span
+              >Before you start, Civra needs to download the AI model to your
+              computer (<strong>approximately 2.4 GB</strong>).</span
+            >
+          </div>
+          <div class="info-item">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path
+                d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"
+              />
+            </svg>
+            <span
+              >An internet connection is needed
+              <strong>only for this one-time download</strong>. After that, all
+              conversations happen locally on your device.</span
+            >
+          </div>
+          <div class="info-item">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+            <span
+              >Your chats never leave your computer. No account, no cloud, no
+              tracking.</span
+            >
+          </div>
+        </div>
+        <div class="disclaimer-box">
+          <strong>Please note:</strong> AI-generated answers can be inaccurate,
+          incomplete, or misleading. Do not rely on them for medical, legal,
+          financial, or other important decisions. Running the model locally
+          reduces some privacy risks, but it does not guarantee absolute
+          security.
+        </div>
+        <div class="setup-actions">
+          <button
+            class="btn-primary"
+            onclick="goToSetup('downloading')"
+            aria-label="Download model and continue"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Download and Continue
+          </button>
+        </div>
+        <div class="details-toggle">
+          <button
+            class="btn-text"
+            onclick="toggleDetails('consentDetails')"
+            aria-expanded="false"
+            aria-controls="consentDetails"
+          >
+            Technical Details
+          </button>
+          <dl id="consentDetails" class="details-content">
+            <dt>Model</dt>
+            <dd>Phi-3-mini-4k-instruct (GGUF Q4_K_M)</dd>
+            <dt>File size</dt>
+            <dd>~2.4 GB</dd>
+            <dt>Format</dt>
+            <dd>.gguf (4-bit quantized)</dd>
+            <dt>Runtime</dt>
+            <dd>llama.cpp via .litertlm binding</dd>
+            <dt>Context window</dt>
+            <dd>4096 tokens</dd>
+          </dl>
+        </div>
+      </div>
+
+      <!-- STATE: Downloading -->
+      <div id="setupDownloading" class="setup-card hidden">
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          style="color: var(--accent); margin-bottom: 12px"
+        >
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <h2>Downloading AI Model</h2>
+        <p class="lead">
+          This is a one-time download of approximately 2.4 GB. Please keep your
+          internet connection active.
+        </p>
+        <div class="progress-section">
+          <div class="progress-bar">
+            <div id="dlProgress" class="progress-fill" style="width: 0%"></div>
+          </div>
+          <div class="progress-text">
+            <span id="dlPercent">0%</span
+            ><span id="dlSize">0 MB / 2,400 MB</span>
+          </div>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-tertiary)">
+          You can close Civra and resume later if needed.
+        </p>
+      </div>
+
+      <!-- STATE: Download Failed -->
+      <div id="setupDownloadFailed" class="setup-card hidden">
+        <div class="error-icon">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </div>
+        <h2>Download Interrupted</h2>
+        <p class="lead">
+          The model download could not be completed. This is usually caused by a
+          lost internet connection or insufficient disk space.
+        </p>
+        <div class="disclaimer-box">
+          <strong>What you can try:</strong><br />
+          &bull; Check your internet connection and try again.<br />
+          &bull; Make sure you have at least 3 GB of free disk space.<br />
+          &bull; If the problem persists, restart Civra and try again.
+        </div>
+        <div class="setup-actions">
+          <button class="btn-primary" onclick="goToSetup('downloading')">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+            </svg>
+            Retry Download
+          </button>
+          <button class="btn-secondary" onclick="goToSetup('consent')">
+            Go Back
+          </button>
+        </div>
+      </div>
+
+      <!-- STATE: Verifying -->
+      <div id="setupVerifying" class="setup-card hidden">
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          style="color: var(--accent); margin-bottom: 12px"
+        >
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        <h2>Verifying Model</h2>
+        <p class="lead">
+          Checking that the downloaded model is complete and intact. This may
+          take a moment.
+        </p>
+        <div class="progress-section">
+          <div class="progress-bar">
+            <div
+              id="verifyProgress"
+              class="progress-fill"
+              style="width: 0%"
+            ></div>
+          </div>
+          <div class="progress-text">
+            <span id="verifyPercent">Checking files...</span><span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATE: Verify Failed -->
+      <div id="setupVerifyFailed" class="setup-card hidden">
+        <div class="error-icon">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        </div>
+        <h2>Model Verification Failed</h2>
+        <p class="lead">
+          The downloaded file appears to be corrupted or incomplete. The model
+          cannot be used in this state.
+        </p>
+        <div class="disclaimer-box">
+          <strong>What happened:</strong> The integrity check did not pass. This
+          can happen if the download was interrupted or the file was
+          modified.<br /><br />
+          <strong>What to do:</strong> Delete the partial download and try
+          again. Civra will re-download the model from the beginning.
+        </div>
+        <div class="setup-actions">
+          <button class="btn-primary" onclick="goToSetup('downloading')">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+            </svg>
+            Re-download Model
+          </button>
+        </div>
+        <div class="details-toggle">
+          <button
+            class="btn-text"
+            onclick="toggleDetails('verifyDetails')"
+            aria-expanded="false"
+          >
+            Technical Details
+          </button>
+          <dl id="verifyDetails" class="details-content">
+            <dt>Expected SHA-256</dt>
+            <dd>a1b2c3d4e5f6...7890</dd>
+            <dt>Computed SHA-256</dt>
+            <dd>f0e1d2c3b4a5...6789 (mismatch)</dd>
+            <dt>File size on disk</dt>
+            <dd>2,398,104,576 bytes (expected 2,400,000,000)</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== MAIN APP ==================== -->
+    <div id="app" class="hidden">
+      <!-- SIDEBAR -->
+      <aside id="sidebar" role="navigation" aria-label="Chat history">
+        <div class="sidebar-header">
+          <h1>
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
+            Civra
+          </h1>
+          <div class="subtitle">Private Offline AI Chat</div>
+          <button
+            class="btn-new-chat"
+            onclick="newChat()"
+            aria-label="Start new chat"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Chat
+          </button>
+        </div>
+        <div class="sidebar-search">
+          <div class="search-wrap">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="search"
+              placeholder="Search chats..."
+              aria-label="Search chat history"
+              id="searchInput"
+              oninput="filterChats(this.value)"
+            />
+          </div>
+        </div>
+        <div
+          class="chat-list"
+          id="chatList"
+          role="list"
+          aria-label="Saved chats"
+        ></div>
+        <div class="sidebar-footer">
+          <button onclick="openSettings()" aria-label="Open settings">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
+              />
+            </svg>
+            Settings
+          </button>
+          <button
+            onclick="confirmDeleteAll()"
+            aria-label="Delete all chat history"
+            style="color: var(--danger)"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="3 6 5 6 21 6" />
+              <path
+                d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+              />
+            </svg>
+            Delete All History
+          </button>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <main id="main">
+        <header class="main-header">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <button
+              class="sidebar-toggle"
+              onclick="
+                document.getElementById('sidebar').classList.toggle('open')
+              "
+              aria-label="Toggle sidebar"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <span class="chat-title" id="mainTitle">New Chat</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span id="statusBadge" class="status-badge offline">
+              <svg width="10" height="10" viewBox="0 0 10 10">
+                <circle cx="5" cy="5" r="5" fill="currentColor" />
+              </svg>
+              Offline Ready
+            </span>
+            <div class="header-actions">
+              <button
+                onclick="toggleTheme()"
+                aria-label="Toggle theme"
+                id="themeBtn"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  id="themeIcon"
+                >
+                  <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                </svg>
+                <span id="themeLabel">Dark</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Chat Area -->
+        <div class="chat-area" id="chatArea">
+          <!-- Empty state -->
+          <div id="chatEmpty" class="chat-empty">
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.2"
+            >
+              <path
+                d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
+              />
+            </svg>
+            <h2>Start a Conversation</h2>
+            <p>
+              Ask a question, brainstorm ideas, or get help with writing.
+              Everything stays on your computer.
+            </p>
+            <div class="disclaimer">
+              AI answers can be inaccurate. Do not rely on them for important
+              decisions.
+            </div>
+          </div>
+          <!-- Messages container -->
+          <div id="messagesContainer" class="messages hidden"></div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+          <div class="input-wrap">
+            <textarea
+              id="chatInput"
+              placeholder="Type your message..."
+              rows="1"
+              aria-label="Message input"
+              onkeydown="handleInputKey(event)"
+              oninput="autoResize(this)"
+            ></textarea>
+            <button
+              class="btn-send"
+              id="btnSend"
+              onclick="sendMessage()"
+              aria-label="Send message"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+              Send
+            </button>
+            <button
+              class="btn-stop hidden"
+              id="btnStop"
+              onclick="stopGeneration()"
+              aria-label="Stop generating"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="6" y="6" width="12" height="12" rx="1" />
+              </svg>
+              Stop
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ==================== SETTINGS PANEL ==================== -->
+    <div id="settingsPanel" class="settings-panel hidden">
+      <div class="settings-backdrop" onclick="closeSettings()"></div>
+      <div class="settings-content" role="dialog" aria-label="Settings">
+        <div class="settings-header">
+          <h2>Settings</h2>
+          <button
+            onclick="closeSettings()"
+            aria-label="Close settings"
+            style="padding: 6px; border-radius: var(--radius-sm)"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div class="settings-body">
+          <!-- Appearance -->
+          <div class="settings-section">
+            <h3>Appearance</h3>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Dark Theme</div>
+                <div class="setting-desc">
+                  Switch between light and dark appearance
+                </div>
+              </div>
+              <label class="toggle">
+                <input
+                  type="checkbox"
+                  id="darkToggle"
+                  onchange="setTheme(this.checked ? 'dark' : 'light')"
+                  aria-label="Toggle dark theme"
+                />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+          <!-- Processing -->
+          <div class="settings-section">
+            <h3>Processing Mode</h3>
+            <div
+              class="radio-group"
+              role="radiogroup"
+              aria-label="Processing mode"
+            >
+              <label
+                class="radio-option selected"
+                id="cpuOption"
+                onclick="selectMode('cpu')"
+              >
+                <input type="radio" name="mode" value="cpu" checked />
+                <div>
+                  <div class="radio-label">CPU (Default)</div>
+                  <div class="radio-desc">
+                    Reliable and compatible with all computers. May be slower on
+                    longer replies.
+                  </div>
+                </div>
+              </label>
+              <label
+                class="radio-option"
+                id="gpuOption"
+                onclick="selectMode('gpu')"
+              >
+                <input type="radio" name="mode" value="gpu" />
+                <div>
+                  <div class="radio-label">
+                    GPU Acceleration
+                    <span class="radio-badge badge-exp">Experimental</span>
+                  </div>
+                  <div class="radio-desc">
+                    Faster replies if your graphics card is supported. May not
+                    work on all systems.
+                  </div>
+                </div>
+              </label>
+            </div>
+            <div id="gpuError" class="gpu-error-msg hidden">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              <div>
+                <strong>GPU mode unavailable.</strong> Civra could not
+                initialize your graphics card for AI processing. This may be due
+                to an unsupported or outdated driver. Civra has switched back to
+                CPU mode. You can try updating your graphics driver and
+                selecting GPU mode again.
+              </div>
+            </div>
+          </div>
+          <!-- Model info -->
+          <div class="settings-section">
+            <h3>Model Information</h3>
+            <div
+              class="setting-row"
+              style="flex-direction: column; align-items: flex-start; gap: 8px"
+            >
+              <div>
+                <div class="setting-label">Installed Model</div>
+                <div class="setting-desc">
+                  The AI model running on your computer
+                </div>
+              </div>
+              <button
+                class="btn-text"
+                onclick="toggleDetails('modelDetails')"
+                aria-expanded="false"
+                style="padding: 0"
+              >
+                Show Technical Details
+              </button>
+              <dl id="modelDetails" class="details-content" style="width: 100%">
+                <dt>Model name</dt>
+                <dd>Phi-3-mini-4k-instruct</dd>
+                <dt>Quantization</dt>
+                <dd>Q4_K_M (4-bit)</dd>
+                <dt>File format</dt>
+                <dd>GGUF</dd>
+                <dt>File size</dt>
+                <dd>2.39 GB</dd>
+                <dt>Context length</dt>
+                <dd>4,096 tokens</dd>
+                <dt>Runtime</dt>
+                <dd>llama.cpp via .litertlm</dd>
+                <dt>Checksum (SHA-256)</dt>
+                <dd
+                  style="
+                    word-break: break-all;
+                    font-family: var(--font-mono);
+                    font-size: 0.75rem;
+                  "
+                >
+                  a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
+                </dd>
+              </dl>
+            </div>
+          </div>
+          <!-- Data -->
+          <div class="settings-section">
+            <h3>Data</h3>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Delete All Chat History</div>
+                <div class="setting-desc">
+                  Permanently remove all saved conversations from this computer
+                </div>
+              </div>
+              <button
+                class="btn-danger"
+                onclick="confirmDeleteAll()"
+                style="font-size: 0.82rem; padding: 8px 14px"
+              >
+                Delete All
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== CONFIRM DIALOG ==================== -->
+    <div id="confirmDialog" class="modal-overlay hidden">
+      <div
+        class="modal"
+        role="alertdialog"
+        aria-labelledby="confirmTitle"
+        aria-describedby="confirmDesc"
+      >
+        <h3 id="confirmTitle"></h3>
+        <p id="confirmDesc"></p>
+        <div class="modal-actions">
+          <button class="btn-secondary" onclick="closeConfirm()">Cancel</button>
+          <button class="btn-danger" id="confirmAction">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TOAST ==================== -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- ==================== MOCKUP NAVIGATOR ==================== -->
+    <details class="mockup-nav" open>
+      <summary>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        Mockup Navigator
+      </summary>
+      <div class="nav-body">
+        <strong
+          style="
+            font-size: 0.72rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          "
+          >Setup Flow</strong
+        >
+        <button onclick="navTo('consent')">First Launch / Consent</button>
+        <button onclick="navTo('downloading')">Download In Progress</button>
+        <button onclick="navTo('downloadFailed')">Download Failed</button>
+        <button onclick="navTo('verifying')">Model Verification</button>
+        <button onclick="navTo('verifyFailed')">Verification Failed</button>
+        <hr />
+        <strong
+          style="
+            font-size: 0.72rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          "
+          >Chat States</strong
+        >
+        <button onclick="navTo('emptyChat')">Empty / New Chat</button>
+        <button onclick="navTo('activeChat')">Active Conversation</button>
+        <button onclick="navTo('streaming')">Streaming Reply</button>
+        <button onclick="navTo('stopped')">Generation Stopped</button>
+        <button onclick="navTo('history')">History Browsing</button>
+        <hr />
+        <strong
+          style="
+            font-size: 0.72rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          "
+          >Panels</strong
+        >
+        <button onclick="navTo('settings')">Settings</button>
+        <button onclick="navTo('gpuFallback')">GPU Fallback Error</button>
+        <button onclick="navTo('deleteAll')">Delete All Confirmation</button>
+        <hr />
+        <strong
+          style="
+            font-size: 0.72rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          "
+          >Theme</strong
+        >
+        <button onclick="setTheme('light')">Light Theme</button>
+        <button onclick="setTheme('dark')">Dark Theme</button>
+      </div>
+    </details>
+
+    <script>
+      // ===== STATE =====
+      let currentSetupState = "consent";
+      let isStreaming = false;
+      let streamInterval = null;
+      let currentChatId = null;
+      let processingMode = "cpu";
+
+      const sampleChats = [
+        {
+          id: 1,
+          title: "Healthy meal ideas",
+          messages: [
+            {
+              role: "user",
+              text: "Give me three healthy dinner ideas that take under 30 minutes.",
+            },
+            {
+              role: "assistant",
+              text: "Here are three quick and healthy dinner ideas:\n\n1. **Sheet Pan Salmon & Vegetables** — Toss salmon fillets with broccoli, bell peppers, and olive oil. Roast at 400°F for 15-20 minutes.\n\n2. **Chicken Stir-Fry** — Sliced chicken breast with snap peas, carrots, and soy sauce over rice. Ready in about 20 minutes.\n\n3. **Black Bean Tacos** — Warm black beans with cumin and garlic, serve in corn tortillas with avocado, salsa, and shredded cabbage.",
+            },
+          ],
+        },
+        {
+          id: 2,
+          title: "Explain photosynthesis",
+          messages: [
+            {
+              role: "user",
+              text: "Can you explain photosynthesis in simple terms?",
+            },
+            {
+              role: "assistant",
+              text: 'Sure! Photosynthesis is how plants make their own food. They take in sunlight through their leaves, absorb water from the soil through their roots, and take in carbon dioxide from the air. Using the energy from sunlight, they convert the water and carbon dioxide into glucose (a type of sugar) which they use for energy, and oxygen, which they release back into the air. It\'s essentially how plants "eat" using light.',
+            },
+          ],
+        },
+        {
+          id: 3,
+          title: "Email draft for meeting",
+          messages: [
+            {
+              role: "user",
+              text: "Help me draft a short email to reschedule a meeting from Thursday to next Monday.",
+            },
+            {
+              role: "assistant",
+              text: "Subject: Rescheduling Our Meeting\n\nHi [Name],\n\nI hope you're doing well. I need to reschedule our meeting originally planned for this Thursday. Would next Monday at the same time work for you?\n\nPlease let me know if another time would be more convenient.\n\nThank you for your flexibility!\n\nBest regards,\n[Your Name]",
+            },
+          ],
+        },
+        {
+          id: 4,
+          title: "Python vs JavaScript",
+          messages: [
+            {
+              role: "user",
+              text: "What are the main differences between Python and JavaScript?",
+            },
+            {
+              role: "assistant",
+              text: "Here are some key differences:\n\n**Typing:** Python uses dynamic typing with indentation-based syntax. JavaScript also uses dynamic typing but with curly braces and semicolons.\n\n**Use cases:** Python is popular in data science, machine learning, and backend development. JavaScript is the primary language of web browsers and is widely used for both frontend and backend (Node.js) development.\n\n**Execution:** Python is typically interpreted and runs on a server or locally. JavaScript was designed to run in web browsers, though Node.js allows it to run on servers too.\n\n**Syntax:** Python emphasizes readability with clean, minimal syntax. JavaScript has a more C-like syntax with more punctuation.",
+            },
+          ],
+        },
+      ];
+
+      let chats = JSON.parse(JSON.stringify(sampleChats));
+
+      // ===== SETUP NAVIGATION =====
+      function goToSetup(state) {
+        document
+          .querySelectorAll(".setup-card")
+          .forEach((c) => c.classList.add("hidden"));
+        const overlay = document.getElementById("setupOverlay");
+        overlay.classList.remove("hidden");
+        document.getElementById("app").classList.add("hidden");
+
+        switch (state) {
+          case "consent":
+            document.getElementById("setupConsent").classList.remove("hidden");
+            break;
+          case "downloading":
+            document
+              .getElementById("setupDownloading")
+              .classList.remove("hidden");
+            simulateDownload();
+            break;
+          case "downloadFailed":
+            document
+              .getElementById("setupDownloadFailed")
+              .classList.remove("hidden");
+            break;
+          case "verifying":
+            document
+              .getElementById("setupVerifying")
+              .classList.remove("hidden");
+            simulateVerification();
+            break;
+          case "verifyFailed":
+            document
+              .getElementById("setupVerifyFailed")
+              .classList.remove("hidden");
+            break;
+          case "ready":
+            overlay.classList.add("hidden");
+            document.getElementById("app").classList.remove("hidden");
+            newChat();
+            break;
+        }
+        currentSetupState = state;
+      }
+
+      function simulateDownload() {
+        let progress = 0;
+        const bar = document.getElementById("dlProgress");
+        const pct = document.getElementById("dlPercent");
+        const size = document.getElementById("dlSize");
+        const iv = setInterval(() => {
+          progress += Math.random() * 4 + 1;
+          if (progress >= 100) {
+            progress = 100;
+            clearInterval(iv);
+            setTimeout(() => goToSetup("verifying"), 600);
+          }
+          bar.style.width = progress + "%";
+          pct.textContent = Math.round(progress) + "%";
+          size.textContent = Math.round(progress * 24) + " MB / 2,400 MB";
+        }, 150);
+      }
+
+      function simulateVerification() {
+        let progress = 0;
+        const bar = document.getElementById("verifyProgress");
+        const pct = document.getElementById("verifyPercent");
+        const iv = setInterval(() => {
+          progress += Math.random() * 8 + 2;
+          if (progress >= 100) {
+            progress = 100;
+            clearInterval(iv);
+            pct.textContent = "Verification complete";
+            setTimeout(() => goToSetup("ready"), 800);
+          }
+          bar.style.width = progress + "%";
+          if (progress < 100)
+            pct.textContent = "Checking files... " + Math.round(progress) + "%";
+        }, 200);
+      }
+
+      // ===== THEME =====
+      function setTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        const toggle = document.getElementById("darkToggle");
+        if (toggle) toggle.checked = theme === "dark";
+        const label = document.getElementById("themeLabel");
+        if (label) label.textContent = theme === "dark" ? "Light" : "Dark";
+        const icon = document.getElementById("themeIcon");
+        if (icon) {
+          icon.innerHTML =
+            theme === "dark"
+              ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+              : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+        }
+      }
+      function toggleTheme() {
+        const current = document.documentElement.getAttribute("data-theme");
+        setTheme(current === "dark" ? "light" : "dark");
+      }
+
+      // ===== CHAT MANAGEMENT =====
+      function renderChatList(filter = "") {
+        const list = document.getElementById("chatList");
+        const filtered = chats.filter((c) =>
+          c.title.toLowerCase().includes(filter.toLowerCase()),
+        );
+        list.innerHTML = filtered
+          .map(
+            (c) => `
+    <div class="chat-item ${c.id === currentChatId ? "active" : ""}" role="listitem" tabindex="0"
+         onclick="openChat(${c.id})" onkeydown="if(event.key==='Enter')openChat(${c.id})" data-id="${c.id}">
+      <span class="chat-item-title" id="chatTitle_${c.id}">${esc(c.title)}</span>
+      <div class="chat-item-actions">
+        <button onclick="event.stopPropagation();renameChat(${c.id})" aria-label="Rename chat" title="Rename">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Rename
+        </button>
+        <button class="danger-btn" onclick="event.stopPropagation();confirmDeleteChat(${c.id})" aria-label="Delete chat" title="Delete">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          Delete
+        </button>
+      </div>
+    </div>
+  `,
+          )
+          .join("");
+      }
+
+      function filterChats(val) {
+        renderChatList(val);
+      }
+
+      function newChat() {
+        currentChatId = null;
+        document.getElementById("mainTitle").textContent = "New Chat";
+        document.getElementById("chatEmpty").classList.remove("hidden");
+        document.getElementById("messagesContainer").classList.add("hidden");
+        document.getElementById("messagesContainer").innerHTML = "";
+        renderChatList();
+        document.getElementById("chatInput").focus();
+      }
+
+      function openChat(id) {
+        if (isStreaming) stopGeneration();
+        currentChatId = id;
+        const chat = chats.find((c) => c.id === id);
+        if (!chat) return;
+        document.getElementById("mainTitle").textContent = chat.title;
+        document.getElementById("chatEmpty").classList.add("hidden");
+        const mc = document.getElementById("messagesContainer");
+        mc.classList.remove("hidden");
+        mc.innerHTML = chat.messages
+          .map((m, i) => renderMessage(m, i === chat.messages.length - 1))
+          .join("");
+        renderChatList();
+        scrollToBottom();
+      }
+
+      function renderMessage(m, isLatest) {
+        const avatar = m.role === "user" ? "You" : "AI";
+        const actions =
+          m.role === "assistant"
+            ? `
+    <div class="msg-actions">
+      <button onclick="copyText(this, \`${esc(m.text).replace(/`/g, "\\`")}\`)" aria-label="Copy reply">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy
+      </button>
+      ${
+        isLatest
+          ? `<button onclick="retryLast()" aria-label="Retry this request">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        Retry
+      </button>`
+          : ""
+      }
+    </div>`
+            : "";
+        return `<div class="message ${m.role}">
+    <div class="msg-avatar">${avatar}</div>
+    <div class="msg-content">
+      <div class="msg-bubble">${formatText(m.text)}</div>
+      ${actions}
+      ${m.stopped ? '<div class="msg-stopped"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="1"/></svg> Generation stopped</div>' : ""}
+    </div>
+  </div>`;
+      }
+
+      function formatText(text) {
+        return esc(text)
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\n/g, "<br>");
+      }
+
+      function esc(s) {
+        const d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      // ===== SEND MESSAGE =====
+      function sendMessage() {
+        const input = document.getElementById("chatInput");
+        const text = input.value.trim();
+        if (!text || isStreaming) return;
+
+        // Create chat if needed
+        if (!currentChatId) {
+          const id = Date.now();
+          chats.unshift({
+            id,
+            title: text.substring(0, 40) + (text.length > 40 ? "..." : ""),
+            messages: [],
+          });
+          currentChatId = id;
+          document.getElementById("mainTitle").textContent = chats[0].title;
+          document.getElementById("chatEmpty").classList.add("hidden");
+          document
+            .getElementById("messagesContainer")
+            .classList.remove("hidden");
+          document.getElementById("messagesContainer").innerHTML = "";
+        }
+
+        const chat = chats.find((c) => c.id === currentChatId);
+        chat.messages.push({ role: "user", text });
+        const mc = document.getElementById("messagesContainer");
+        mc.innerHTML += renderMessage({ role: "user", text }, false);
+        input.value = "";
+        autoResize(input);
+        renderChatList();
+        scrollToBottom();
+
+        // Start streaming
+        startStreaming(chat);
+      }
+
+      function startStreaming(chat) {
+        isStreaming = true;
+        document.getElementById("btnSend").classList.add("hidden");
+        document.getElementById("btnStop").classList.remove("hidden");
+
+        const responses = [
+          "That's a great question! Let me think about this carefully.\n\nBased on what I know, there are several important factors to consider. First, it's worth noting that this topic has multiple perspectives. The most commonly accepted view is that context matters significantly.\n\nI'd recommend exploring this further by looking at reliable sources specific to your situation. Remember that my answers may not always be perfectly accurate, so it's always good to verify important information.",
+          "I'd be happy to help with that! Here's what I can share:\n\nThe key points to understand are that this involves several interconnected elements. Each one plays a role in the overall picture.\n\n**First**, consider the basics and make sure you have a solid foundation.\n**Second**, look at how different factors interact with each other.\n**Third**, don't hesitate to experiment and learn from the results.\n\nKeep in mind that my response may not cover every nuance, so feel free to ask follow-up questions!",
+          'Interesting topic! Let me break this down.\n\nThere are a few ways to approach this. The simplest method would be to start with the fundamentals and build from there. Many people find it helpful to work through examples step by step.\n\nOne thing to keep in mind is that there\'s no single "right" answer in many cases — it depends on your specific goals and constraints.\n\nWould you like me to go deeper into any particular aspect of this?',
+        ];
+        const fullText =
+          responses[Math.floor(Math.random() * responses.length)];
+
+        const mc = document.getElementById("messagesContainer");
+        const msgDiv = document.createElement("div");
+        msgDiv.className = "message assistant";
+        msgDiv.innerHTML = `
+    <div class="msg-avatar">AI</div>
+    <div class="msg-content">
+      <div class="msg-bubble"><span class="stream-text"></span><span class="cursor-blink"></span></div>
+      <div class="msg-actions">
+        <button onclick="copyText(this)" aria-label="Copy reply">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+        <button onclick="retryLast()" aria-label="Retry this request">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Retry
+        </button>
+      </div>
+    </div>`;
+        mc.appendChild(msgDiv);
+        scrollToBottom();
+
+        let idx = 0;
+        const streamEl = msgDiv.querySelector(".stream-text");
+        const cursorEl = msgDiv.querySelector(".cursor-blink");
+
+        streamInterval = setInterval(() => {
+          if (idx < fullText.length) {
+            const chunk = fullText.substring(
+              idx,
+              idx + Math.floor(Math.random() * 3) + 1,
+            );
+            idx += chunk.length;
+            streamEl.innerHTML = formatText(fullText.substring(0, idx));
+            scrollToBottom();
+          } else {
+            finishStreaming(chat, fullText, msgDiv, cursorEl, false);
+          }
+        }, 30);
+
+        // Store refs for stop
+        window._streamMsgDiv = msgDiv;
+        window._streamCursor = cursorEl;
+        window._streamFullText = fullText;
+        window._streamIdx = () => idx;
+      }
+
+      function finishStreaming(chat, text, msgDiv, cursorEl, stopped) {
+        clearInterval(streamInterval);
+        isStreaming = false;
+        document.getElementById("btnSend").classList.remove("hidden");
+        document.getElementById("btnStop").classList.add("hidden");
+        if (cursorEl) cursorEl.remove();
+
+        if (!stopped) {
+          chat.messages.push({ role: "assistant", text });
+        } else {
+          const partial = msgDiv.querySelector(".stream-text").textContent;
+          chat.messages.push({
+            role: "assistant",
+            text: partial,
+            stopped: true,
+          });
+          const content = msgDiv.querySelector(".msg-content");
+          const stoppedEl = document.createElement("div");
+          stoppedEl.className = "msg-stopped";
+          stoppedEl.innerHTML =
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="1"/></svg> Generation stopped';
+          content.appendChild(stoppedEl);
+        }
+        renderChatList();
+      }
+
+      function stopGeneration() {
+        if (!isStreaming) return;
+        const chat = chats.find((c) => c.id === currentChatId);
+        finishStreaming(
+          chat,
+          "",
+          window._streamMsgDiv,
+          window._streamCursor,
+          true,
+        );
+      }
+
+      function retryLast() {
+        if (isStreaming) return;
+        const chat = chats.find((c) => c.id === currentChatId);
+        if (!chat || chat.messages.length < 2) return;
+        // Remove last assistant message
+        chat.messages.pop();
+        const lastUser = chat.messages[chat.messages.length - 1];
+        // Re-render
+        openChat(currentChatId);
+        // Re-send
+        setTimeout(() => startStreaming(chat), 300);
+      }
+
+      function copyText(btn, text) {
+        const bubble = btn.closest(".msg-content").querySelector(".msg-bubble");
+        const t = text || bubble.textContent;
+        navigator.clipboard
+          .writeText(t)
+          .then(() => {
+            showToast("Copied to clipboard");
+          })
+          .catch(() => {
+            showToast("Copied to clipboard");
+          });
+      }
+
+      function handleInputKey(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      }
+
+      function autoResize(el) {
+        el.style.height = "auto";
+        el.style.height = Math.min(el.scrollHeight, 160) + "px";
+      }
+
+      function scrollToBottom() {
+        const area = document.getElementById("chatArea");
+        requestAnimationFrame(() => (area.scrollTop = area.scrollHeight));
+      }
+
+      // ===== RENAME / DELETE =====
+      function renameChat(id) {
+        const el = document.getElementById("chatTitle_" + id);
+        const chat = chats.find((c) => c.id === id);
+        const oldTitle = chat.title;
+        el.innerHTML = `<input type="text" value="${esc(oldTitle)}" onblur="finishRename(${id}, this)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(oldTitle)}';this.blur()}" autofocus>`;
+        el.querySelector("input").focus();
+        el.querySelector("input").select();
+      }
+
+      function finishRename(id, input) {
+        const chat = chats.find((c) => c.id === id);
+        const newTitle = input.value.trim() || chat.title;
+        chat.title = newTitle;
+        if (id === currentChatId)
+          document.getElementById("mainTitle").textContent = newTitle;
+        renderChatList();
+      }
+
+      function confirmDeleteChat(id) {
+        const chat = chats.find((c) => c.id === id);
+        showConfirm(
+          "Delete Chat",
+          `Are you sure you want to delete "${chat.title}"? This cannot be undone.`,
+          () => {
+            chats = chats.filter((c) => c.id !== id);
+            if (currentChatId === id) newChat();
+            renderChatList();
+            closeConfirm();
+            showToast("Chat deleted");
+          },
+        );
+      }
+
+      function confirmDeleteAll() {
+        showConfirm(
+          "Delete All Chat History",
+          "This will permanently delete all saved conversations from this computer. This action cannot be undone.",
+          () => {
+            chats = [];
+            newChat();
+            renderChatList();
+            closeConfirm();
+            showToast("All history deleted");
+          },
+        );
+      }
+
+      // ===== CONFIRM DIALOG =====
+      function showConfirm(title, desc, onConfirm) {
+        document.getElementById("confirmTitle").textContent = title;
+        document.getElementById("confirmDesc").textContent = desc;
+        document.getElementById("confirmDialog").classList.remove("hidden");
+        const btn = document.getElementById("confirmAction");
+        btn.onclick = onConfirm;
+        btn.focus();
+      }
+      function closeConfirm() {
+        document.getElementById("confirmDialog").classList.add("hidden");
+      }
+
+      // ===== SETTINGS =====
+      function openSettings() {
+        document.getElementById("settingsPanel").classList.remove("hidden");
+      }
+      function closeSettings() {
+        document.getElementById("settingsPanel").classList.add("hidden");
+      }
+
+      function selectMode(mode) {
+        processingMode = mode;
+        document
+          .getElementById("cpuOption")
+          .classList.toggle("selected", mode === "cpu");
+        document
+          .getElementById("gpuOption")
+          .classList.toggle("selected", mode === "gpu");
+        document.getElementById("cpuOption").querySelector("input").checked =
+          mode === "cpu";
+        document.getElementById("gpuOption").querySelector("input").checked =
+          mode === "gpu";
+
+        const badge = document.getElementById("statusBadge");
+        const gpuErr = document.getElementById("gpuError");
+
+        if (mode === "gpu") {
+          // Simulate GPU failure after a moment
+          setTimeout(() => {
+            gpuErr.classList.remove("hidden");
+            badge.className = "status-badge gpu-warn";
+            badge.innerHTML =
+              '<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="currentColor"/></svg> GPU Unavailable — Using CPU';
+            processingMode = "cpu";
+            document.getElementById("cpuOption").classList.add("selected");
+            document.getElementById("gpuOption").classList.remove("selected");
+            document
+              .getElementById("cpuOption")
+              .querySelector("input").checked = true;
+            document
+              .getElementById("gpuOption")
+              .querySelector("input").checked = false;
+          }, 1200);
+        } else {
+          gpuErr.classList.add("hidden");
+          badge.className = "status-badge offline";
+          badge.innerHTML =
+            '<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="currentColor"/></svg> Offline Ready';
+        }
+      }
+
+      // ===== DETAILS TOGGLE =====
+      function toggleDetails(id) {
+        const el = document.getElementById(id);
+        const isOpen = el.classList.toggle("open");
+        const btn = el.previousElementSibling;
+        if (btn) btn.setAttribute("aria-expanded", isOpen);
+      }
+
+      // ===== TOAST =====
+      function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.remove("hidden");
+        setTimeout(() => t.classList.add("hidden"), 2500);
+      }
+
+      // ===== MOCKUP NAVIGATOR =====
+      function navTo(state) {
+        // Close panels
+        closeSettings();
+        closeConfirm();
+        if (isStreaming) {
+          clearInterval(streamInterval);
+          isStreaming = false;
+        }
+
+        const setupStates = [
+          "consent",
+          "downloading",
+          "downloadFailed",
+          "verifying",
+          "verifyFailed",
+        ];
+        if (setupStates.includes(state)) {
+          goToSetup(state);
+          return;
+        }
+
+        // Ensure app is visible
+        document.getElementById("setupOverlay").classList.add("hidden");
+        document.getElementById("app").classList.remove("hidden");
+
+        switch (state) {
+          case "emptyChat":
+            newChat();
+            break;
+          case "activeChat":
+            openChat(chats[0].id);
+            break;
+          case "streaming":
+            openChat(chats[0].id);
+            setTimeout(() => {
+              document.getElementById("chatInput").value =
+                "Tell me something interesting";
+              sendMessage();
+            }, 300);
+            break;
+          case "stopped":
+            openChat(chats[0].id);
+            setTimeout(() => {
+              document.getElementById("chatInput").value =
+                "Explain quantum computing";
+              sendMessage();
+              setTimeout(() => stopGeneration(), 1500);
+            }, 300);
+            break;
+          case "history":
+            openChat(chats[1].id);
+            renderChatList();
+            break;
+          case "settings":
+            openSettings();
+            break;
+          case "gpuFallback":
+            openSettings();
+            setTimeout(() => selectMode("gpu"), 300);
+            break;
+          case "deleteAll":
+            confirmDeleteAll();
+            break;
+        }
+      }
+
+      // ===== INIT =====
+      renderChatList();
+      goToSetup("consent");
+    </script>
+  </body>
+</html>

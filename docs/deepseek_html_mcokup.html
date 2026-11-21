@@ -1,0 +1,3085 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Civra — Private Offline AI Chat · UI mockup</title>
+    <style>
+      /* ============================================================
+   Tokens
+   ============================================================ */
+      :root {
+        --bg-page: #e8ebef;
+        --surface: #ffffff;
+        --sidebar: #f7f8fa;
+        --text: #11131a;
+        --text-2: #59616f;
+        --text-3: #8b93a1;
+        --border: #e5e8ed;
+        --border-2: #d4dae2;
+        --accent: #0e8f78;
+        --accent-hover: #0b7a66;
+        --accent-soft: #e6f4f1;
+        --accent-ring: rgba(14, 143, 120, 0.34);
+        --on-accent: #ffffff;
+        --danger: #bf3a2b;
+        --danger-soft: #fdecea;
+        --warn-bg: #fdf4e2;
+        --warn-border: #f0ddb5;
+        --warn-text: #875806;
+        --hover: #eff1f4;
+        --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+        --shadow-md: 0 8px 24px rgba(16, 24, 40, 0.1);
+        --shadow-lg:
+          0 28px 70px rgba(16, 24, 40, 0.18), 0 2px 8px rgba(16, 24, 40, 0.06);
+        --radius: 12px;
+        --font:
+          "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system,
+          "Inter", Roboto, sans-serif;
+      }
+      [data-theme="dark"] {
+        --bg-page: #07090b;
+        --surface: #15181d;
+        --sidebar: #111418;
+        --text: #e9ebef;
+        --text-2: #a3abb7;
+        --text-3: #7a828f;
+        --border: #252a31;
+        --border-2: #333a43;
+        --accent: #35c9a9;
+        --accent-hover: #4dd8ba;
+        --accent-soft: #0f2f29;
+        --accent-ring: rgba(53, 201, 169, 0.4);
+        --on-accent: #04231c;
+        --danger: #ef7266;
+        --danger-soft: #2c1a18;
+        --warn-bg: #2a2213;
+        --warn-border: #463a1d;
+        --warn-text: #e5bb70;
+        --hover: #1d2228;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+        --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+        --shadow-lg:
+          0 28px 70px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: var(--font);
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--text);
+        background:
+          radial-gradient(
+            1100px 620px at 50% -25%,
+            var(--accent-soft),
+            transparent 62%
+          ),
+          var(--bg-page);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      :focus {
+        outline: none;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+
+      /* ============================================================
+   Window
+   ============================================================ */
+      .window {
+        position: relative;
+        width: min(1120px, 100%);
+        height: min(760px, calc(100vh - 48px));
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ============================================================
+   Buttons
+   ============================================================ */
+      .btn {
+        font: inherit;
+        font-weight: 500;
+        border-radius: 9px;
+        border: 1px solid transparent;
+        padding: 9px 16px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition:
+          background 0.13s ease,
+          border-color 0.13s ease,
+          color 0.13s ease,
+          transform 0.06s ease;
+        white-space: nowrap;
+        background: transparent;
+        color: var(--text);
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn.primary {
+        background: var(--accent);
+        color: var(--on-accent);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+      }
+      .btn.primary:hover {
+        background: var(--accent-hover);
+      }
+      .btn.ghost {
+        background: var(--surface);
+        border-color: var(--border-2);
+        color: var(--text);
+      }
+      .btn.ghost:hover {
+        background: var(--hover);
+      }
+      .btn.danger {
+        background: var(--danger);
+        color: #fff;
+      }
+      [data-theme="dark"] .btn.danger {
+        color: #200b08;
+      }
+      .btn.danger:hover {
+        filter: brightness(1.06);
+      }
+      .btn.quiet {
+        background: transparent;
+        border-color: transparent;
+        color: var(--text-2);
+      }
+      .btn.quiet:hover {
+        background: var(--hover);
+        color: var(--text);
+      }
+      .btn.small {
+        padding: 6px 12px;
+        font-size: 13px;
+        border-radius: 8px;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn svg {
+        flex: none;
+      }
+
+      /* ============================================================
+   Setup
+   ============================================================ */
+      .setup {
+        flex: 1;
+        overflow-y: auto;
+        padding: 44px 32px 40px;
+        display: flex;
+        justify-content: center;
+        background: radial-gradient(
+          760px 340px at 50% -60px,
+          var(--accent-soft),
+          transparent 70%
+        );
+      }
+      .setup-inner {
+        width: 100%;
+        max-width: 620px;
+        margin: auto;
+      }
+
+      .setup-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 34px;
+      }
+      .mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        background: linear-gradient(
+          150deg,
+          var(--accent),
+          color-mix(in srgb, var(--accent) 72%, #000 12%)
+        );
+        color: var(--on-accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        box-shadow: 0 2px 8px var(--accent-ring);
+      }
+      .mark.small {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+      }
+      .mark-name {
+        font-weight: 600;
+        font-size: 15px;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+      }
+      .mark-sub {
+        font-size: 12.5px;
+        color: var(--text-3);
+      }
+
+      .setup-step h1 {
+        font-size: 26px;
+        line-height: 1.25;
+        letter-spacing: -0.022em;
+        margin: 0 0 10px;
+        font-weight: 600;
+      }
+      .lede {
+        font-size: 15px;
+        color: var(--text-2);
+        margin: 0 0 28px;
+        max-width: 52ch;
+      }
+
+      .facts {
+        list-style: none;
+        margin: 0 0 26px;
+        padding: 0;
+        display: grid;
+        gap: 16px;
+      }
+      .facts li {
+        display: flex;
+        gap: 13px;
+        align-items: flex-start;
+      }
+      .fact-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        flex: none;
+        background: var(--accent-soft);
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      [data-theme="dark"] .fact-icon {
+        color: var(--accent);
+      }
+      .facts strong {
+        display: block;
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 2px;
+      }
+      .facts p {
+        margin: 0;
+        color: var(--text-2);
+        font-size: 13.5px;
+        max-width: 56ch;
+      }
+
+      .consent-box {
+        border: 1px solid var(--border);
+        background: var(--sidebar);
+        border-radius: var(--radius);
+        padding: 16px 18px;
+        margin-bottom: 26px;
+      }
+      .consent-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        justify-content: space-between;
+      }
+      .consent-title {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .consent-sub {
+        font-size: 13.5px;
+        color: var(--text-2);
+        margin-top: 2px;
+      }
+      .details-panel {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px dashed var(--border-2);
+      }
+      .details-panel dl {
+        margin: 0;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 7px 18px;
+        font-size: 13px;
+      }
+      .details-panel dt {
+        color: var(--text-3);
+      }
+      .details-panel dd {
+        margin: 0;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .setup-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .setup-actions .btn.primary {
+        padding: 11px 20px;
+        font-size: 14.5px;
+      }
+      .fineprint {
+        font-size: 12.5px;
+        color: var(--text-3);
+      }
+
+      /* progress */
+      .progress-block {
+        margin: 6px 0 26px;
+      }
+      .progress {
+        height: 8px;
+        border-radius: 99px;
+        background: var(--border);
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 99px;
+        background: linear-gradient(
+          90deg,
+          var(--accent),
+          color-mix(in srgb, var(--accent) 65%, #14b8a6)
+        );
+        transition: width 0.18s linear;
+      }
+      .progress-fill.indeterminate {
+        width: 35% !important;
+        animation: slide 1.5s ease-in-out infinite;
+      }
+      @keyframes slide {
+        0% {
+          margin-left: -35%;
+        }
+        100% {
+          margin-left: 100%;
+        }
+      }
+      .progress-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: var(--text-2);
+        margin-top: 10px;
+        font-variant-numeric: tabular-nums;
+      }
+      .hint {
+        font-size: 13px;
+        color: var(--text-3);
+        margin-top: 6px;
+      }
+
+      .alert {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        margin-bottom: 24px;
+        font-size: 13.5px;
+        border: 1px solid;
+      }
+      .alert.error {
+        background: var(--danger-soft);
+        border-color: color-mix(in srgb, var(--danger) 28%, transparent);
+        color: var(--text);
+      }
+      .alert.warn {
+        background: var(--warn-bg);
+        border-color: var(--warn-border);
+        color: var(--text);
+      }
+      .alert svg {
+        flex: none;
+        margin-top: 1px;
+      }
+      .alert strong {
+        display: block;
+        margin-bottom: 2px;
+      }
+      .alert p {
+        margin: 0;
+        color: var(--text-2);
+      }
+
+      /* ============================================================
+   App shell
+   ============================================================ */
+      .app {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+      }
+
+      /* ---------- Sidebar ---------- */
+      .sidebar {
+        width: 264px;
+        flex: none;
+        background: var(--sidebar);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .side-top {
+        padding: 16px 16px 12px;
+      }
+      .brand-mini {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+      .brand-mini-name {
+        font-weight: 600;
+        font-size: 14.5px;
+        letter-spacing: -0.01em;
+      }
+
+      .side-new {
+        padding: 0 12px 10px;
+      }
+      .new-chat {
+        width: 100%;
+        padding: 10px 14px;
+        justify-content: flex-start;
+        font-size: 13.5px;
+      }
+
+      .search {
+        position: relative;
+        padding: 0 12px 10px;
+      }
+      .search svg {
+        position: absolute;
+        left: 23px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-3);
+        pointer-events: none;
+        margin-top: -5px;
+      }
+      .search input {
+        width: 100%;
+        font: inherit;
+        font-size: 13.5px;
+        padding: 8px 12px 8px 34px;
+        border-radius: 9px;
+        border: 1px solid var(--border-2);
+        background: var(--surface);
+        color: var(--text);
+      }
+      .search input::placeholder {
+        color: var(--text-3);
+      }
+      .search input:focus {
+        border-color: var(--accent);
+        outline: none;
+        box-shadow: 0 0 0 3px var(--accent-ring);
+      }
+
+      .chat-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 4px 8px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-height: 0;
+      }
+      .chat-item {
+        text-align: left;
+        border: none;
+        background: transparent;
+        font: inherit;
+        padding: 9px 10px;
+        border-radius: 9px;
+        cursor: pointer;
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        width: 100%;
+      }
+      .chat-item:hover {
+        background: var(--hover);
+      }
+      .chat-item.active {
+        background: var(--accent-soft);
+      }
+      .chat-item.active .chat-item-title {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      [data-theme="dark"] .chat-item.active .chat-item-title {
+        color: var(--accent);
+      }
+      .chat-item-title {
+        font-size: 13.5px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .chat-item-time {
+        font-size: 11.5px;
+        color: var(--text-3);
+      }
+      .empty-list {
+        padding: 14px 12px;
+        font-size: 13px;
+        color: var(--text-3);
+        margin: 0;
+      }
+
+      .side-bottom {
+        padding: 10px 12px 12px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+      }
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12.5px;
+        color: var(--text-2);
+        padding: 5px 9px;
+        border-radius: 8px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        width: fit-content;
+      }
+      .status .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+        flex: none;
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+      }
+      .side-bottom-row {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .side-bottom-row .btn {
+        flex: 1;
+        justify-content: flex-start;
+      }
+      .side-bottom-row .btn.icon {
+        flex: none;
+        padding: 6px 9px;
+      }
+
+      /* ---------- Main ---------- */
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+        background: var(--surface);
+      }
+
+      .topbar {
+        height: 60px;
+        flex: none;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px 0 22px;
+        gap: 16px;
+      }
+      .topbar-title {
+        min-width: 0;
+      }
+      .topbar-title h1 {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .topbar-sub {
+        font-size: 12px;
+        color: var(--text-3);
+      }
+      .topbar-actions {
+        display: flex;
+        gap: 6px;
+        flex: none;
+      }
+
+      .banner-slot {
+        padding: 0;
+      }
+      .banner {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin: 12px 18px 0;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--warn-border);
+        background: var(--warn-bg);
+      }
+      .banner svg {
+        flex: none;
+        margin-top: 1px;
+        color: var(--warn-text);
+      }
+      .banner-text {
+        flex: 1;
+        min-width: 0;
+      }
+      .banner-text strong {
+        display: block;
+        font-size: 13.5px;
+        font-weight: 600;
+      }
+      .banner-text span {
+        font-size: 13px;
+        color: var(--text-2);
+      }
+      .banner-actions {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex: none;
+      }
+      .icon-btn {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        color: var(--text-3);
+        padding: 4px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .icon-btn:hover {
+        background: var(--hover);
+        color: var(--text);
+      }
+
+      .view {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      /* ---------- Messages ---------- */
+      .messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 26px 32px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        scroll-behavior: smooth;
+      }
+      .messages > * {
+        max-width: 760px;
+        width: 100%;
+        margin: 0 auto;
+      }
+
+      .msg.user {
+        display: flex;
+        justify-content: flex-end;
+      }
+      .msg.user .bubble {
+        background: var(--accent-soft);
+        color: var(--text);
+        border-radius: 14px 14px 4px 14px;
+        padding: 11px 15px;
+        font-size: 14px;
+        max-width: 78%;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      [data-theme="dark"] .msg.user .bubble {
+        background: #16302a;
+      }
+
+      .msg.bot {
+        display: flex;
+        gap: 13px;
+        align-items: flex-start;
+      }
+      .avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        flex: none;
+        background: var(--accent);
+        color: var(--on-accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1px;
+      }
+      .msg-body {
+        flex: 1;
+        min-width: 0;
+      }
+      .msg-text {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-size: 14.5px;
+        line-height: 1.65;
+        color: var(--text);
+      }
+      .msg-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 9px;
+        min-height: 24px;
+      }
+      .mini {
+        font: inherit;
+        font-size: 12.5px;
+        color: var(--text-2);
+        background: transparent;
+        border: 1px solid transparent;
+        padding: 3px 9px;
+        border-radius: 7px;
+        cursor: pointer;
+      }
+      .mini:hover {
+        background: var(--hover);
+        color: var(--text);
+        border-color: var(--border);
+      }
+      .stopped-tag {
+        font-size: 12px;
+        color: var(--text-3);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 9px;
+        border-radius: 7px;
+        background: var(--sidebar);
+        border: 1px solid var(--border);
+      }
+      .stopped-tag::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 2px;
+        background: var(--text-3);
+      }
+      .caret {
+        display: inline-block;
+        width: 7px;
+        height: 15px;
+        vertical-align: -2px;
+        background: var(--accent);
+        border-radius: 1.5px;
+        margin-left: 2px;
+        animation: blink 1s steps(2, start) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* ---------- Empty state ---------- */
+      .empty {
+        margin: auto;
+        text-align: center;
+        padding: 20px 0 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .empty-mark {
+        width: 52px;
+        height: 52px;
+        border-radius: 15px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 18px;
+      }
+      .empty h2 {
+        font-size: 20px;
+        margin: 0 0 8px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .empty p {
+        color: var(--text-2);
+        margin: 0 0 24px;
+        font-size: 14px;
+        max-width: 44ch;
+      }
+      .suggestions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        max-width: 460px;
+      }
+      .suggestion {
+        font: inherit;
+        font-size: 13.5px;
+        text-align: left;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 11px 15px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition:
+          border-color 0.13s,
+          background 0.13s;
+      }
+      .suggestion:hover {
+        border-color: var(--border-2);
+        background: var(--sidebar);
+      }
+      .empty-note {
+        font-size: 12.5px;
+        color: var(--text-3);
+        margin-top: 26px !important;
+      }
+
+      /* ---------- Composer ---------- */
+      .composer-wrap {
+        flex: none;
+        padding: 10px 32px 16px;
+        background: var(--surface);
+      }
+      .composer {
+        max-width: 760px;
+        margin: 0 auto;
+        border: 1px solid var(--border-2);
+        border-radius: 14px;
+        background: var(--surface);
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        padding: 8px 8px 8px 14px;
+        transition:
+          border-color 0.13s,
+          box-shadow 0.13s;
+      }
+      .composer:focus-within {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-ring);
+      }
+      .composer textarea {
+        flex: 1;
+        font: inherit;
+        font-size: 14px;
+        line-height: 1.5;
+        border: none;
+        background: transparent;
+        resize: none;
+        outline: none;
+        color: var(--text);
+        padding: 7px 0;
+        max-height: 140px;
+        min-height: 34px;
+      }
+      .composer textarea::placeholder {
+        color: var(--text-3);
+      }
+      .composer textarea:disabled {
+        color: var(--text-3);
+      }
+      .composer-note {
+        max-width: 760px;
+        margin: 8px auto 0;
+        text-align: center;
+        font-size: 11.5px;
+        color: var(--text-3);
+      }
+
+      /* ---------- Settings ---------- */
+      .settings-view {
+        overflow-y: auto;
+      }
+      .settings-scroll {
+        padding: 24px 32px 40px;
+        max-width: 760px;
+        margin: 0 auto;
+        width: 100%;
+      }
+      .settings-scroll > h2 {
+        font-size: 20px;
+        margin: 0 0 20px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        margin-bottom: 14px;
+        background: var(--surface);
+      }
+      .card h3 {
+        font-size: 14.5px;
+        margin: 0 0 3px;
+        font-weight: 600;
+      }
+      .card > p {
+        margin: 0 0 14px;
+        font-size: 13.5px;
+        color: var(--text-2);
+      }
+
+      .segmented {
+        display: inline-flex;
+        padding: 3px;
+        gap: 3px;
+        background: var(--sidebar);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+      .segmented button {
+        font: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        border: none;
+        background: transparent;
+        color: var(--text-2);
+        padding: 7px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .segmented button[aria-checked="true"] {
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .option-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .option {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 13px 15px;
+        cursor: pointer;
+        transition:
+          border-color 0.13s,
+          background 0.13s;
+      }
+      .option:hover {
+        background: var(--sidebar);
+      }
+      .option:has(input:checked) {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+      .option input {
+        margin: 3px 0 0;
+        accent-color: var(--accent);
+        flex: none;
+      }
+      .option strong {
+        display: block;
+        font-size: 13.5px;
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+      .option span {
+        font-size: 13px;
+        color: var(--text-2);
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .row strong {
+        display: block;
+        font-size: 13.5px;
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+      .row span {
+        font-size: 13px;
+        color: var(--text-2);
+      }
+
+      .about {
+        margin: 0;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px 24px;
+        font-size: 13.5px;
+      }
+      .about dt {
+        color: var(--text-3);
+      }
+      .about dd {
+        margin: 0;
+      }
+
+      /* ---------- Modal ---------- */
+      .modal-backdrop {
+        position: absolute;
+        inset: 0;
+        z-index: 50;
+        background: rgba(12, 16, 22, 0.42);
+        backdrop-filter: blur(2px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        animation: fade 0.14s ease;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        box-shadow: var(--shadow-lg);
+        width: 100%;
+        max-width: 400px;
+        padding: 22px 22px 18px;
+        animation: pop 0.16s ease;
+      }
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: translateY(6px) scale(0.99);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .modal h3 {
+        font-size: 16px;
+        margin: 0 0 8px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .modal p {
+        margin: 0 0 18px;
+        font-size: 13.5px;
+        color: var(--text-2);
+      }
+      .modal input {
+        width: 100%;
+        font: inherit;
+        font-size: 14px;
+        padding: 9px 12px;
+        border-radius: 9px;
+        border: 1px solid var(--border-2);
+        background: var(--surface);
+        color: var(--text);
+        margin-bottom: 18px;
+      }
+      .modal input:focus {
+        border-color: var(--accent);
+        outline: none;
+        box-shadow: 0 0 0 3px var(--accent-ring);
+      }
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      /* ---------- Toast ---------- */
+      .toast {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--text);
+        color: var(--surface);
+        font-size: 13px;
+        padding: 9px 18px;
+        border-radius: 99px;
+        box-shadow: var(--shadow-md);
+        z-index: 60;
+        animation: toastIn 0.18s ease;
+        white-space: nowrap;
+      }
+      [data-theme="dark"] .toast {
+        background: #e9ebef;
+        color: #15181d;
+      }
+      @keyframes toastIn {
+        from {
+          opacity: 0;
+          transform: translate(-50%, 8px);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+      }
+
+      /* ============================================================
+   Prototype panel (not part of the product UI)
+   ============================================================ */
+      .proto {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 200;
+        width: 236px;
+        background: color-mix(in srgb, var(--surface) 88%, transparent);
+        backdrop-filter: blur(10px);
+        border: 1px dashed var(--border-2);
+        border-radius: 12px;
+        box-shadow: var(--shadow-md);
+        font-size: 12px;
+        overflow: hidden;
+      }
+      .proto-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px 8px 12px;
+        border-bottom: 1px dashed var(--border);
+        color: var(--text-3);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 10.5px;
+      }
+      .proto-head button {
+        border: none;
+        background: transparent;
+        color: var(--text-3);
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        padding: 2px 5px;
+        border-radius: 5px;
+      }
+      .proto-head button:hover {
+        background: var(--hover);
+        color: var(--text);
+      }
+      .proto-body {
+        padding: 9px 10px 11px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      .proto-group {
+        width: 100%;
+        color: var(--text-3);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin: 6px 0 0;
+      }
+      .proto-group:first-child {
+        margin-top: 0;
+      }
+      .proto-body button {
+        font: inherit;
+        font-size: 11.5px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text-2);
+        padding: 4px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.12s;
+      }
+      .proto-body button:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .proto-body button.on {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--on-accent);
+      }
+      .proto.collapsed .proto-body {
+        display: none;
+      }
+
+      /* ============================================================
+   Responsive (smaller desktop windows)
+   ============================================================ */
+      @media (max-width: 1000px) {
+        .sidebar {
+          width: 224px;
+        }
+        .messages {
+          padding: 22px 22px 8px;
+        }
+        .composer-wrap {
+          padding: 10px 22px 14px;
+        }
+        .settings-scroll {
+          padding: 22px 22px 32px;
+        }
+      }
+      @media (max-width: 820px) {
+        body {
+          padding: 0;
+        }
+        .window {
+          height: 100vh;
+          border-radius: 0;
+          border: none;
+        }
+        .sidebar {
+          width: 196px;
+        }
+        .brand-mini-name {
+          display: none;
+        }
+        .messages {
+          padding: 18px 16px 8px;
+        }
+        .composer-wrap {
+          padding: 8px 16px 12px;
+        }
+        .proto {
+          display: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.001ms !important;
+          transition-duration: 0.001ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="window" id="window">
+      <!-- ============================================================
+       SETUP
+       ============================================================ -->
+      <section class="setup" id="setupScreen" aria-label="Setup">
+        <!-- ---- consent ---- -->
+        <div class="setup-step setup-inner" id="step-consent">
+          <div class="setup-brand">
+            <div class="mark" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 3l7 2.8v6.1c0 4.1-2.9 7.3-7 9.1-4.1-1.8-7-5-7-9.1V5.8L12 3z"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+                <circle cx="12" cy="11.2" r="2.1" fill="currentColor" />
+              </svg>
+            </div>
+            <div>
+              <div class="mark-name">Civra</div>
+              <div class="mark-sub">Private Offline AI Chat</div>
+            </div>
+          </div>
+
+          <h1>A private AI that runs on your computer</h1>
+          <p class="lede">
+            Civra chats with an AI model stored on this PC. What you type stays
+            on this PC.
+          </p>
+
+          <ul class="facts">
+            <li>
+              <span class="fact-icon" aria-hidden="true">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 3l7 2.8v6.1c0 4.1-2.9 7.3-7 9.1-4.1-1.8-7-5-7-9.1V5.8L12 3z"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <div>
+                <strong>Nothing leaves this device</strong>
+                <p>
+                  No account, no cloud service, no usage tracking. Chats are
+                  stored only on this computer.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="fact-icon" aria-hidden="true">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M3 8.5A15 15 0 0 1 12 5a15 15 0 0 1 9 3.5"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M6.3 12.4A10 10 0 0 1 12 10.3a10 10 0 0 1 5.7 2.1"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                  />
+                  <circle cx="12" cy="17.5" r="1.4" fill="currentColor" />
+                  <path
+                    d="M4 4l16 16"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <div>
+                <strong>Works offline after setup</strong>
+                <p>
+                  The internet is needed for this one download, and never again
+                  for normal chatting.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="fact-icon" aria-hidden="true">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 4.5L21 19.5H3L12 4.5z"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M12 10.5v4"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                  />
+                  <circle cx="12" cy="17" r="1" fill="currentColor" />
+                </svg>
+              </span>
+              <div>
+                <strong>Answers can be wrong</strong>
+                <p>
+                  A local model is helpful for everyday questions, but don’t
+                  rely on it for important decisions.
+                </p>
+              </div>
+            </li>
+          </ul>
+
+          <div class="consent-box">
+            <div class="consent-row">
+              <div>
+                <div class="consent-title">One-time model download</div>
+                <div class="consent-sub">
+                  Uses about <strong>2.4 GB</strong> of storage. You can remove
+                  it later in Settings.
+                </div>
+              </div>
+              <button
+                class="btn ghost small"
+                id="btnSetupDetails"
+                aria-expanded="false"
+                aria-controls="setupDetails"
+              >
+                Details
+              </button>
+            </div>
+            <div class="details-panel" id="setupDetails" hidden>
+              <dl>
+                <div style="display: contents">
+                  <dt>Model</dt>
+                  <dd>Civra Local 3B (instruction-tuned)</dd>
+                </div>
+                <div style="display: contents">
+                  <dt>File</dt>
+                  <dd>civra-local-3b.litertlm</dd>
+                </div>
+                <div style="display: contents">
+                  <dt>Size on disk</dt>
+                  <dd>2,412 MB (≈ 2.4 GB)</dd>
+                </div>
+                <div style="display: contents">
+                  <dt>Quantization</dt>
+                  <dd>4-bit grouped</dd>
+                </div>
+                <div style="display: contents">
+                  <dt>Context window</dt>
+                  <dd>4,096 tokens</dd>
+                </div>
+                <div style="display: contents">
+                  <dt>Runs on</dt>
+                  <dd>CPU by default; GPU mode is experimental</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+          <div class="setup-actions">
+            <button class="btn primary" id="btnConsentDownload">
+              Download model (2.4 GB)
+            </button>
+            <span class="fineprint"
+              >Nothing is downloaded until you choose this.</span
+            >
+          </div>
+        </div>
+
+        <!-- ---- downloading ---- -->
+        <div class="setup-step setup-inner" id="step-download" hidden>
+          <div class="setup-brand">
+            <div class="mark" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 3l7 2.8v6.1c0 4.1-2.9 7.3-7 9.1-4.1-1.8-7-5-7-9.1V5.8L12 3z"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+                <circle cx="12" cy="11.2" r="2.1" fill="currentColor" />
+              </svg>
+            </div>
+            <div>
+              <div class="mark-name">Civra</div>
+              <div class="mark-sub">Private Offline AI Chat</div>
+            </div>
+          </div>
+
+          <h1>Downloading the model</h1>
+          <p class="lede">
+            This is the only time Civra needs the internet. You can keep using
+            your computer while it runs.
+          </p>
+
+          <div class="progress-block">
+            <div
+              class="progress"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-label="Model download progress"
+              id="dlProgressBar"
+            >
+              <div class="progress-fill" id="dlFill"></div>
+            </div>
+            <div class="progress-meta">
+              <span id="dlBytes">0 MB of 2.4 GB</span>
+              <span id="dlPct">0%</span>
+            </div>
+            <div class="hint" id="dlHint">Starting download…</div>
+          </div>
+
+          <div class="setup-actions">
+            <button class="btn ghost" id="btnPauseDl">Pause</button>
+            <button class="btn quiet" id="btnCancelDl">Cancel</button>
+          </div>
+        </div>
+
+        <!-- ---- download failed ---- -->
+        <div class="setup-step setup-inner" id="step-download-error" hidden>
+          <div class="setup-brand">
+            <div class="mark" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 3l7 2.8v6.1c0 4.1-2.9 7.3-7 9.1-4.1-1.8-7-5-7-9.1V5.8L12 3z"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+                <circle cx="12" cy="11.2" r="2.1" fill="currentColor" />
+              </svg>
+            </div>
+            <div>
+              <div class="mark-name">Civra</div>
+              <div class="mark-sub">Private Offline AI Chat</div>
+            </div>
+          </div>
+
+          <h1>The download didn’t finish</h1>
+          <p class="lede">
+            Civra stopped at <strong>912 MB of 2.4 GB</strong>. Your progress is
+            saved, so resuming won’t start over.
+          </p>
+
+          <div class="alert error">
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+                stroke="currentColor"
+                stroke-width="1.9"
+              />
+              <path
+                d="M12 7.5v5.5"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
+              <circle cx="12" cy="16.4" r="1" fill="currentColor" />
+            </svg>
+            <div>
+              <strong>Couldn’t reach the download server</strong>
+              <p>
+                Check that this computer is connected to the internet, then try
+                again.
+              </p>
+            </div>
+          </div>
+
+          <div class="setup-actions">
+            <button class="btn primary" id="btnResumeDl">
+              Resume download
+            </button>
+            <button class="btn quiet" id="btnBackToConsent">Back</button>
+          </div>
+        </div>
+
+        <!-- ---- verifying ---- -->
+        <div class="setup-step setup-inner" id="step-verify" hidden>
+          <div class="setup-brand">
+            <div class="mark" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 3l7 2.8v6.1c0 4.1-2.9 7.3-7 9.1-4.1-1.8-7-5-7-9.1V5.8L12 3z"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+                <circle cx="12" cy="11.2" r="2.1" fill="currentColor" />
+              </svg>
+            </div>
+            <div>
+              <div class="mark-name">Civra</div>
+              <div class="mark-sub">Private Offline AI Chat</div>
+            </div>
+          </div>
+
+          <h1>Checking the download</h1>
+          <p class="lede">
+            Civra is making sure the model file is complete and undamaged. This
+            usually takes about a minute.
+          </p>
+
+          <div class="progress-block">
+            <div
+              class="progress"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-label="Model verification progress"
+              id="vfProgressBar"
+            >
+              <div class="progress-fill" id="vfFill"></div>
+            </div>
+            <div class="progress-meta">
+              <span id="vfLabel">Checking files…</span>
+              <span id="vfPct">0%</span>
+            </div>
+            <div class="hint">
+              Keep Civra open. You can’t chat until this finishes.
+            </div>
+          </div>
+        </div>
+
+        <!-- ---- verification failed ---- -->
+        <div class="setup-step setup-inner" id="step-verify-error" hidden>
+          <div class="setup-brand">
+            <div class="mark" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 3l7 2.8v6.1c0 4.1-2.9 7.3-7 9.1-4.1-1.8-7-5-7-9.1V5.8L12 3z"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+                <circle cx="12" cy="11.2" r="2.1" fill="currentColor" />
+              </svg>
+            </div>
+            <div>
+              <div class="mark-name">Civra</div>
+              <div class="mark-sub">Private Offline AI Chat</div>
+            </div>
+          </div>
+
+          <h1>The model didn’t pass its check</h1>
+          <p class="lede">
+            Some parts of the downloaded file are missing or damaged, so Civra
+            can’t use it yet. Downloading again usually fixes this.
+          </p>
+
+          <div class="alert error">
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+                stroke="currentColor"
+                stroke-width="1.9"
+              />
+              <path
+                d="M12 7.5v5.5"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
+              <circle cx="12" cy="16.4" r="1" fill="currentColor" />
+            </svg>
+            <div>
+              <strong>Model file incomplete</strong>
+              <p>1.1 GB of the download could not be read back correctly.</p>
+            </div>
+          </div>
+
+          <div class="setup-actions">
+            <button class="btn primary" id="btnRedownload">
+              Download again
+            </button>
+            <button
+              class="btn quiet"
+              id="btnVerifyDetails"
+              aria-expanded="false"
+              aria-controls="verifyDetails"
+            >
+              Details
+            </button>
+          </div>
+
+          <div
+            class="details-panel"
+            id="verifyDetails"
+            hidden
+            style="margin-top: 18px; border-top: 1px dashed var(--border-2)"
+          >
+            <dl>
+              <div style="display: contents">
+                <dt>Checked file</dt>
+                <dd>civra-local-3b.litertlm</dd>
+              </div>
+              <div style="display: contents">
+                <dt>Expected size</dt>
+                <dd>2,412 MB</dd>
+              </div>
+              <div style="display: contents">
+                <dt>Result</dt>
+                <dd>Checksum mismatch (block 2 of 4)</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+       APP
+       ============================================================ -->
+      <div class="app" id="appShell" hidden>
+        <!-- ---------- sidebar ---------- -->
+        <aside class="sidebar">
+          <div class="side-top">
+            <div class="brand-mini">
+              <span class="mark small" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 3l7 2.8v6.1c0 4.1-2.9 7.3-7 9.1-4.1-1.8-7-5-7-9.1V5.8L12 3z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                  <circle cx="12" cy="11.2" r="2.1" fill="currentColor" />
+                </svg>
+              </span>
+              <span class="brand-mini-name">Civra</span>
+            </div>
+          </div>
+
+          <div class="side-new">
+            <button class="btn primary new-chat" id="btnNewChat">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 5v14M5 12h14"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+              New chat
+            </button>
+          </div>
+
+          <div class="search">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                cx="11"
+                cy="11"
+                r="6.5"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="M16 16l4 4"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            <input
+              type="search"
+              id="chatSearch"
+              placeholder="Search chats"
+              aria-label="Search chats"
+            />
+          </div>
+
+          <nav class="chat-list" id="chatList" aria-label="Chat history"></nav>
+
+          <div class="side-bottom">
+            <div class="status" id="statusChip">
+              <span class="dot" aria-hidden="true"></span>
+              Offline ready
+            </div>
+            <div class="side-bottom-row">
+              <button class="btn ghost small" id="btnSettings">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                  />
+                  <path
+                    d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.3a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-2.8-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4.6 15a2 2 0 0 1-2-2 2 2 0 0 1 2-2 1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 11.3 4.6V4.4a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7 2 2 0 0 1 0 4z"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                Settings
+              </button>
+              <button
+                class="btn ghost small icon"
+                id="btnTheme"
+                title="Switch to dark theme"
+                aria-label="Switch to dark theme"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  id="themeIcon"
+                >
+                  <path
+                    d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ---------- main ---------- -->
+        <main class="main">
+          <header class="topbar">
+            <div class="topbar-title">
+              <h1 id="chatTitle">New chat</h1>
+              <span class="topbar-sub" id="chatSub"
+                >Local · nothing leaves this device</span
+              >
+            </div>
+            <div class="topbar-actions" id="chatActions" hidden>
+              <button class="btn quiet small" id="btnRename">Rename</button>
+              <button class="btn quiet small" id="btnDelete">Delete</button>
+            </div>
+          </header>
+
+          <div class="banner-slot" id="bannerSlot"></div>
+
+          <!-- chat view -->
+          <section class="view" id="viewChat">
+            <div class="messages" id="messages" aria-live="polite"></div>
+
+            <div class="composer-wrap">
+              <form class="composer" id="composer">
+                <textarea
+                  id="input"
+                  rows="1"
+                  placeholder="Message Civra…"
+                  aria-label="Message Civra"
+                ></textarea>
+                <button type="submit" class="btn primary" id="btnSend">
+                  Send
+                </button>
+              </form>
+              <div class="composer-note">
+                Civra runs entirely on this computer. Answers may be inaccurate
+                — check anything important.
+              </div>
+            </div>
+          </section>
+
+          <!-- settings view -->
+          <section class="view settings-view" id="viewSettings" hidden>
+            <div class="settings-scroll">
+              <h2>Settings</h2>
+
+              <div class="card">
+                <h3>Appearance</h3>
+                <p>Choose how Civra looks on this computer.</p>
+                <div class="segmented" role="radiogroup" aria-label="Theme">
+                  <button
+                    role="radio"
+                    aria-checked="true"
+                    data-theme-set="light"
+                  >
+                    Light
+                  </button>
+                  <button
+                    role="radio"
+                    aria-checked="false"
+                    data-theme-set="dark"
+                  >
+                    Dark
+                  </button>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Performance</h3>
+                <p>
+                  CPU mode works on every computer. Graphics card mode can be
+                  faster, but it is still experimental.
+                </p>
+                <div
+                  class="option-list"
+                  role="radiogroup"
+                  aria-label="Processing mode"
+                >
+                  <label class="option">
+                    <input type="radio" name="perf" value="cpu" checked />
+                    <div>
+                      <strong>CPU mode — recommended</strong>
+                      <span
+                        >Reliable and predictable. Works on every computer that
+                        can run Civra.</span
+                      >
+                    </div>
+                  </label>
+                  <label class="option">
+                    <input type="radio" name="perf" value="gpu" />
+                    <div>
+                      <strong>Graphics card mode — experimental</strong>
+                      <span
+                        >Can be noticeably faster on supported graphics cards.
+                        May fail on some computers; Civra falls back to CPU mode
+                        automatically.</span
+                      >
+                    </div>
+                  </label>
+                </div>
+
+                <div
+                  class="alert warn"
+                  id="gpuNotice"
+                  hidden
+                  style="margin: 16px 0 0"
+                >
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M12 4.5L21 19.5H3L12 4.5z"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M12 10.5v4"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <circle cx="12" cy="17" r="1" fill="currentColor" />
+                  </svg>
+                  <div>
+                    <strong
+                      >Graphics card mode isn’t available on this
+                      computer</strong
+                    >
+                    <p id="gpuNoticeBody">
+                      Civra switched to CPU mode. Chats still work normally —
+                      replies may take a little longer.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Storage</h3>
+                <div class="row">
+                  <div>
+                    <strong>Civra Local 3B</strong>
+                    <span>2.4 GB · used for every chat</span>
+                  </div>
+                  <button class="btn ghost small" id="btnRemoveModel">
+                    Remove model
+                  </button>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Chat history</h3>
+                <div class="row">
+                  <div>
+                    <strong>Delete all chats</strong>
+                    <span
+                      >Removes every conversation from this computer. This can’t
+                      be undone.</span
+                    >
+                  </div>
+                  <button class="btn danger small" id="btnDeleteAll">
+                    Delete all
+                  </button>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>About</h3>
+                <dl class="about">
+                  <div style="display: contents">
+                    <dt>Version</dt>
+                    <dd>1.0.0</dd>
+                  </div>
+                  <div style="display: contents">
+                    <dt>Runs</dt>
+                    <dd>Entirely on this computer</dd>
+                  </div>
+                  <div style="display: contents">
+                    <dt>Network during chat</dt>
+                    <dd>Not used</dd>
+                  </div>
+                  <div style="display: contents">
+                    <dt>Account</dt>
+                    <dd>None</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <!-- modal -->
+      <div class="modal-backdrop" id="modal" hidden>
+        <div
+          class="modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modalTitle"
+        >
+          <h3 id="modalTitle">Title</h3>
+          <p id="modalBody">Body</p>
+          <input id="modalInput" type="text" hidden />
+          <div class="modal-actions">
+            <button class="btn ghost" id="modalCancel">Cancel</button>
+            <button class="btn danger" id="modalConfirm">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- toast -->
+      <div
+        class="toast"
+        id="toast"
+        role="status"
+        aria-live="polite"
+        hidden
+      ></div>
+    </div>
+
+    <!-- ============================================================
+     Prototype state switcher (mockup tool — not part of the app)
+     ============================================================ -->
+    <div class="proto" id="proto">
+      <div class="proto-head">
+        <span>Prototype states</span>
+        <button
+          id="protoToggle"
+          aria-label="Collapse prototype panel"
+          aria-expanded="true"
+        >
+          −
+        </button>
+      </div>
+      <div class="proto-body" id="protoBody">
+        <div class="proto-group">Setup</div>
+        <button data-state="consent">First launch</button>
+        <button data-state="download">Downloading</button>
+        <button data-state="download-error">Download failed</button>
+        <button data-state="verify">Checking model</button>
+        <button data-state="verify-error">Check failed</button>
+
+        <div class="proto-group">Chat</div>
+        <button data-state="empty">Empty chat</button>
+        <button data-state="streaming">Streaming reply</button>
+        <button data-state="stopped">Reply stopped</button>
+        <button data-state="history">History + search</button>
+
+        <div class="proto-group">App</div>
+        <button data-state="settings">Settings</button>
+        <button data-state="gpu">GPU unavailable</button>
+        <button data-theme-btn="light">Light</button>
+        <button data-theme-btn="dark">Dark</button>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        "use strict";
+
+        /* ---------------- helpers ---------------- */
+        const $ = (s, r = document) => r.querySelector(s);
+        const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+        const escapeHtml = (s) =>
+          String(s).replace(
+            /[&<>"']/g,
+            (c) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              })[c],
+          );
+
+        const root = document.documentElement;
+        const setupScreen = $("#setupScreen");
+        const appShell = $("#appShell");
+        const messagesEl = $("#messages");
+        const chatListEl = $("#chatList");
+        const searchInput = $("#chatSearch");
+        const inputEl = $("#input");
+        const composer = $("#composer");
+        const btnSend = $("#btnSend");
+        const chatTitle = $("#chatTitle");
+        const chatSub = $("#chatSub");
+        const chatActions = $("#chatActions");
+        const bannerSlot = $("#bannerSlot");
+        const viewChat = $("#viewChat");
+        const viewSettings = $("#viewSettings");
+        const toastEl = $("#toast");
+
+        const LOGO_SVG = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+  <path d="M12 3l7 2.8v6.1c0 4.1-2.9 7.3-7 9.1-4.1-1.8-7-5-7-9.1V5.8L12 3z"
+        stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="12" cy="11.2" r="2.1" fill="currentColor"/>
+</svg>`;
+
+        /* ---------------- data ---------------- */
+        let chats = [
+          {
+            id: "c1",
+            title: "Weekly meal prep",
+            updated: "2 days ago",
+            messages: [
+              {
+                role: "user",
+                text: "Can you help me plan a simple weekly meal prep routine?",
+              },
+              {
+                role: "assistant",
+                text: "Sure. A routine you can actually keep is better than an ambitious one you drop by Wednesday. Start with two proteins, two grains and three vegetables for the week.\n\nCook the grains and proteins in one session, roast the vegetables on a single tray, then portion everything into containers. Keep sauces separate so nothing goes soggy.",
+              },
+            ],
+          },
+          {
+            id: "c2",
+            title: "Explaining compound interest",
+            updated: "3 days ago",
+            messages: [
+              {
+                role: "user",
+                text: "Explain compound interest like I am new to it.",
+              },
+              {
+                role: "assistant",
+                text: "Compound interest is interest that earns interest. If you leave the interest in the account, next time the interest is calculated on a slightly bigger amount.",
+              },
+            ],
+          },
+          {
+            id: "c3",
+            title: "Cover letter ideas",
+            updated: "Last week",
+            messages: [
+              { role: "user", text: "Give me ideas for a short cover letter." },
+              {
+                role: "assistant",
+                text: "Keep it to three short paragraphs: why this role, one concrete thing you have done, and what you would like to talk about in an interview.",
+              },
+            ],
+          },
+          {
+            id: "c4",
+            title: "Trip packing list",
+            updated: "Last week",
+            messages: [
+              {
+                role: "user",
+                text: "Help me build a packing list for a five day trip.",
+              },
+              {
+                role: "assistant",
+                text: "Start with the things that are hard to replace: documents, medications, chargers. Then clothing for five days, which is usually fewer items than people expect.",
+              },
+            ],
+          },
+        ];
+
+        let currentChatId = null;
+        let stream = null;
+        let dlTimer = null,
+          dlPct = 0,
+          dlPaused = false;
+        let vfTimer = null;
+        let toastTimer = null;
+
+        const getChat = (id) => chats.find((c) => c.id === id);
+
+        /* ---------------- theme ---------------- */
+        function setTheme(t) {
+          root.dataset.theme = t;
+          $$("[data-theme-set]").forEach((b) =>
+            b.setAttribute("aria-checked", String(b.dataset.themeSet === t)),
+          );
+          $$("[data-theme-btn]").forEach((b) =>
+            b.classList.toggle("on", b.dataset.themeBtn === t),
+          );
+          const btn = $("#btnTheme");
+          const next = t === "light" ? "dark" : "light";
+          btn.title = `Switch to ${next} theme`;
+          btn.setAttribute("aria-label", `Switch to ${next} theme`);
+          $("#themeIcon").innerHTML =
+            t === "light"
+              ? '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>'
+              : '<circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.9"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>';
+        }
+        $("#btnTheme").addEventListener("click", () =>
+          setTheme(root.dataset.theme === "light" ? "dark" : "light"),
+        );
+
+        /* ---------------- toast ---------------- */
+        function toast(msg) {
+          clearTimeout(toastTimer);
+          toastEl.textContent = msg;
+          toastEl.hidden = false;
+          toastTimer = setTimeout(() => {
+            toastEl.hidden = true;
+          }, 2200);
+        }
+
+        /* ---------------- timers ---------------- */
+        function clearTimers() {
+          if (dlTimer) {
+            clearInterval(dlTimer);
+            dlTimer = null;
+          }
+          if (vfTimer) {
+            clearInterval(vfTimer);
+            vfTimer = null;
+          }
+          if (stream) {
+            clearInterval(stream.timer);
+            stream = null;
+          }
+          dlPaused = false;
+        }
+
+        /* ============================================================
+   SETUP
+   ============================================================ */
+        const SETUP_STEPS = [
+          "consent",
+          "download",
+          "download-error",
+          "verify",
+          "verify-error",
+        ];
+
+        function goSetup(step) {
+          clearTimers();
+          setupScreen.hidden = false;
+          appShell.hidden = true;
+          SETUP_STEPS.forEach((s) => {
+            const el = document.getElementById("step-" + s);
+            if (el) el.hidden = s !== step;
+          });
+          setupScreen.scrollTop = 0;
+
+          if (step === "download") startDownload();
+          if (step === "verify") startVerify();
+        }
+
+        /* --- details disclosures --- */
+        $("#btnSetupDetails").addEventListener("click", (e) => {
+          const panel = $("#setupDetails");
+          const open = panel.hidden;
+          panel.hidden = !open;
+          e.currentTarget.setAttribute("aria-expanded", String(open));
+          e.currentTarget.textContent = open ? "Hide details" : "Details";
+        });
+        $("#btnVerifyDetails").addEventListener("click", (e) => {
+          const panel = $("#verifyDetails");
+          const open = panel.hidden;
+          panel.hidden = !open;
+          e.currentTarget.setAttribute("aria-expanded", String(open));
+        });
+
+        /* --- download simulation --- */
+        const TOTAL_MB = 2412;
+
+        function updateDl() {
+          const pct = Math.min(100, dlPct);
+          $("#dlFill").style.width = pct + "%";
+          $("#dlProgressBar").setAttribute(
+            "aria-valuenow",
+            String(Math.round(pct)),
+          );
+          $("#dlPct").textContent = Math.round(pct) + "%";
+          const mb = Math.round((TOTAL_MB * pct) / 100);
+          $("#dlBytes").textContent = mb.toLocaleString() + " MB of 2.4 GB";
+          if (pct >= 100)
+            $("#dlHint").textContent =
+              "Download complete. Preparing to check the file…";
+          else if (dlPaused)
+            $("#dlHint").textContent = "Paused. Your progress is saved.";
+          else
+            $("#dlHint").textContent =
+              "Downloading at 5.1 MB/s · about 3 minutes left";
+        }
+
+        function startDownload() {
+          dlPct = 0;
+          dlPaused = false;
+          $("#btnPauseDl").textContent = "Pause";
+          updateDl();
+          if (dlTimer) clearInterval(dlTimer);
+          dlTimer = setInterval(() => {
+            if (dlPaused) return;
+            dlPct += 1.4;
+            if (dlPct >= 100) {
+              dlPct = 100;
+              updateDl();
+              clearInterval(dlTimer);
+              dlTimer = null;
+              setTimeout(() => goSetup("verify"), 650);
+              return;
+            }
+            updateDl();
+          }, 90);
+        }
+
+        $("#btnPauseDl").addEventListener("click", (e) => {
+          dlPaused = !dlPaused;
+          e.currentTarget.textContent = dlPaused ? "Resume" : "Pause";
+          updateDl();
+        });
+        $("#btnCancelDl").addEventListener("click", () => goSetup("consent"));
+        $("#btnConsentDownload").addEventListener("click", () =>
+          goSetup("download"),
+        );
+        $("#btnResumeDl").addEventListener("click", () => goSetup("download"));
+        $("#btnBackToConsent").addEventListener("click", () =>
+          goSetup("consent"),
+        );
+        $("#btnRedownload").addEventListener("click", () =>
+          goSetup("download"),
+        );
+
+        /* --- verification simulation --- */
+        function startVerify() {
+          let p = 0;
+          const fill = $("#vfFill"),
+            label = $("#vfLabel"),
+            pctEl = $("#vfPct");
+          fill.style.width = "0%";
+          label.textContent = "Checking files…";
+          pctEl.textContent = "0%";
+          if (vfTimer) clearInterval(vfTimer);
+          vfTimer = setInterval(() => {
+            p += 2.2;
+            if (p >= 100) {
+              p = 100;
+              clearInterval(vfTimer);
+              vfTimer = null;
+              setTimeout(() => {
+                goApp("chat");
+                currentChatId = null;
+                renderAll();
+                toast("Setup complete — Civra is ready offline");
+              }, 520);
+              return;
+            }
+            fill.style.width = p + "%";
+            pctEl.textContent = Math.round(p) + "%";
+            label.textContent =
+              p < 45
+                ? "Checking files…"
+                : p < 85
+                  ? "Confirming the model loads correctly…"
+                  : "Almost done…";
+          }, 70);
+        }
+
+        /* ============================================================
+   APP
+   ============================================================ */
+        function goApp(view) {
+          clearTimers();
+          setupScreen.hidden = true;
+          appShell.hidden = false;
+          showView(view || "chat");
+        }
+
+        function showView(v) {
+          const isSettings = v === "settings";
+          viewChat.hidden = isSettings;
+          viewSettings.hidden = !isSettings;
+          chatActions.hidden = isSettings || !currentChatId;
+
+          if (isSettings) {
+            chatTitle.textContent = "Settings";
+            chatSub.textContent = "Preferences, performance and storage";
+          } else {
+            updateTopbar();
+          }
+        }
+
+        function updateTopbar() {
+          if (currentChatId) {
+            const c = getChat(currentChatId);
+            chatTitle.textContent = c ? c.title : "New chat";
+            chatSub.textContent = "Local · nothing leaves this device";
+            chatActions.hidden = false;
+          } else {
+            chatTitle.textContent = "New chat";
+            chatSub.textContent = "Local · nothing leaves this device";
+            chatActions.hidden = true;
+          }
+        }
+
+        /* ---------------- chat list ---------------- */
+        function renderChatList() {
+          const q = searchInput.value.trim().toLowerCase();
+          const list = chats.filter(
+            (c) =>
+              !q ||
+              c.title.toLowerCase().includes(q) ||
+              c.messages.some((m) => m.text.toLowerCase().includes(q)),
+          );
+
+          chatListEl.innerHTML = "";
+          if (!list.length) {
+            const p = document.createElement("p");
+            p.className = "empty-list";
+            p.textContent = q
+              ? `No chats match “${q}”.`
+              : "No saved chats yet.";
+            chatListEl.appendChild(p);
+            return;
+          }
+
+          list.forEach((c) => {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className =
+              "chat-item" + (c.id === currentChatId ? " active" : "");
+            b.innerHTML = `<span class="chat-item-title">${escapeHtml(c.title)}</span>
+                   <span class="chat-item-time">${escapeHtml(c.updated)}</span>`;
+            b.addEventListener("click", () => openChat(c.id));
+            chatListEl.appendChild(b);
+          });
+        }
+
+        searchInput.addEventListener("input", renderChatList);
+
+        /* ---------------- messages ---------------- */
+        function emptyState() {
+          const wrap = document.createElement("div");
+          wrap.className = "empty";
+          wrap.innerHTML = `
+    <div class="empty-mark" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M12 3l7 2.8v6.1c0 4.1-2.9 7.3-7 9.1-4.1-1.8-7-5-7-9.1V5.8L12 3z"
+              stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <circle cx="12" cy="11.2" r="2.1" fill="currentColor"/>
+      </svg>
+    </div>
+    <h2>Start a new chat</h2>
+    <p>Ask anything. Civra answers using the model on this computer — nothing is sent anywhere.</p>
+    <div class="suggestions">
+      <button type="button" class="suggestion">Help me plan a simple weekly meal prep routine</button>
+      <button type="button" class="suggestion">Explain compound interest like I’m new to it</button>
+      <button type="button" class="suggestion">Give me ideas for a short cover letter</button>
+    </div>
+    <p class="empty-note">Civra can be wrong. Check important information.</p>`;
+
+          wrap.querySelectorAll(".suggestion").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              inputEl.value = btn.textContent.trim();
+              autoGrow();
+              inputEl.focus();
+            });
+          });
+          return wrap;
+        }
+
+        function messageEl(m) {
+          if (m.role === "user") {
+            const d = document.createElement("div");
+            d.className = "msg user";
+            d.innerHTML = `<div class="bubble">${escapeHtml(m.text)}</div>`;
+            return d;
+          }
+
+          const d = document.createElement("div");
+          d.className = "msg bot";
+          d.innerHTML = `
+    <div class="avatar" aria-hidden="true">${LOGO_SVG}</div>
+    <div class="msg-body">
+      <div class="msg-text">${escapeHtml(m.text)}</div>
+      <div class="msg-actions">
+        ${m.stopped ? '<span class="stopped-tag">Stopped by you</span>' : ""}
+        <button type="button" class="mini" data-act="copy">Copy</button>
+        <button type="button" class="mini" data-act="retry">Retry</button>
+      </div>
+    </div>`;
+
+          d.querySelector('[data-act="copy"]').addEventListener("click", () => {
+            const text = d.querySelector(".msg-text").textContent;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).catch(() => {});
+            }
+            toast("Reply copied");
+          });
+          d.querySelector('[data-act="retry"]').addEventListener(
+            "click",
+            retryLast,
+          );
+          return d;
+        }
+
+        function renderMessages() {
+          messagesEl.innerHTML = "";
+          const chat = currentChatId ? getChat(currentChatId) : null;
+
+          if (!chat || !chat.messages.length) {
+            messagesEl.appendChild(emptyState());
+            return;
+          }
+          chat.messages.forEach((m) => messagesEl.appendChild(messageEl(m)));
+          scrollBottom();
+        }
+
+        function renderAll() {
+          renderChatList();
+          renderMessages();
+          updateTopbar();
+          if (viewSettings.hidden === false) showView("settings");
+        }
+
+        function scrollBottom() {
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        /* ---------------- open / new / delete ---------------- */
+        function openChat(id) {
+          currentChatId = id;
+          showView("chat");
+          renderAll();
+        }
+
+        $("#btnNewChat").addEventListener("click", () => {
+          stopStreamIfAny(true);
+          currentChatId = null;
+          searchInput.value = "";
+          showView("chat");
+          renderAll();
+          inputEl.focus();
+        });
+
+        $("#btnRename").addEventListener("click", () => {
+          const chat = getChat(currentChatId);
+          if (!chat) return;
+          openModal({
+            title: "Rename chat",
+            body: "Give this conversation a name you’ll recognise later.",
+            confirmLabel: "Save",
+            danger: false,
+            input: chat.title,
+            onConfirm: (value) => {
+              const name = (value || "").trim();
+              if (!name) return;
+              chat.title = name;
+              renderAll();
+              toast("Chat renamed");
+            },
+          });
+        });
+
+        $("#btnDelete").addEventListener("click", () => {
+          const chat = getChat(currentChatId);
+          if (!chat) return;
+          openModal({
+            title: "Delete this chat?",
+            body: `“${chat.title}” will be removed from this computer. This can’t be undone.`,
+            confirmLabel: "Delete",
+            danger: true,
+            onConfirm: () => {
+              chats = chats.filter((c) => c.id !== chat.id);
+              currentChatId = null;
+              renderAll();
+              toast("Chat deleted");
+            },
+          });
+        });
+
+        $("#btnDeleteAll").addEventListener("click", () => {
+          openModal({
+            title: "Delete all chats?",
+            body: `All ${chats.length} conversations will be removed from this computer. This can’t be undone.`,
+            confirmLabel: "Delete all",
+            danger: true,
+            onConfirm: () => {
+              chats = [];
+              currentChatId = null;
+              searchInput.value = "";
+              showView("chat");
+              renderAll();
+              toast("All chats deleted");
+            },
+          });
+        });
+
+        $("#btnRemoveModel").addEventListener("click", () => {
+          openModal({
+            title: "Remove the model?",
+            body: "Civra will need to download the 2.4 GB model again before you can chat. Internet will be required.",
+            confirmLabel: "Remove",
+            danger: true,
+            onConfirm: () => {
+              clearTimers();
+              appShell.hidden = true;
+              setupScreen.hidden = false;
+              goSetup("consent");
+            },
+          });
+        });
+
+        $("#btnSettings").addEventListener("click", () => showView("settings"));
+
+        /* ---------------- composer ---------------- */
+        function autoGrow() {
+          inputEl.style.height = "auto";
+          inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + "px";
+        }
+        inputEl.addEventListener("input", autoGrow);
+        inputEl.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            composer.requestSubmit();
+          }
+        });
+
+        composer.addEventListener("submit", (e) => {
+          e.preventDefault();
+          if (stream) {
+            stopStreamIfAny(true);
+            return;
+          }
+          const text = inputEl.value.trim();
+          if (!text) return;
+          sendMessage(text);
+        });
+
+        function sendMessage(text) {
+          if (!currentChatId) {
+            const id = "c" + Date.now();
+            chats.unshift({
+              id,
+              title: text.length > 38 ? text.slice(0, 38).trim() + "…" : text,
+              updated: "Just now",
+              messages: [],
+            });
+            currentChatId = id;
+          }
+          const chat = getChat(currentChatId);
+          chat.messages.push({ role: "user", text });
+          inputEl.value = "";
+          autoGrow();
+          renderChatList();
+          renderMessages();
+          updateTopbar();
+          startStream(chat, DEMO_REPLY);
+        }
+
+        const DEMO_REPLY =
+          "Sure — a simple routine works better than a complicated one. Pick two proteins, two grains and three vegetables for the week. " +
+          "Cook the grains and proteins in one session, roast the vegetables on a single tray, then portion everything into containers. " +
+          "Keep sauces separate so nothing goes soggy. Most of it keeps three to four days in the fridge, and you can freeze the second half.";
+
+        function startStream(chat, text) {
+          const el = document.createElement("div");
+          el.className = "msg bot streaming";
+          el.innerHTML = `
+    <div class="avatar" aria-hidden="true">${LOGO_SVG}</div>
+    <div class="msg-body">
+      <div class="msg-text"></div>
+      <div class="msg-actions"></div>
+    </div>`;
+          messagesEl.appendChild(el);
+
+          const textEl = el.querySelector(".msg-text");
+          const actionsEl = el.querySelector(".msg-actions");
+          const words = text.split(" ");
+          let i = 0;
+
+          setStreamingUI(true);
+          scrollBottom();
+
+          const timer = setInterval(() => {
+            textEl.textContent += (i === 0 ? "" : " ") + words[i];
+            i++;
+            scrollBottom();
+            if (i >= words.length) {
+              clearInterval(timer);
+              finishStream(chat, el, textEl, actionsEl, text, false);
+            }
+          }, 42);
+
+          stream = { timer, chat, el, textEl, actionsEl, fullText: text };
+          // caret
+          const caret = document.createElement("span");
+          caret.className = "caret";
+          textEl.appendChild(caret);
+        }
+
+        function finishStream(chat, el, textEl, actionsEl, text, stopped) {
+          el.classList.remove("streaming");
+          textEl.textContent = text;
+          chat.messages.push({ role: "assistant", text, stopped });
+
+          actionsEl.innerHTML = stopped
+            ? '<span class="stopped-tag">Stopped by you</span>' +
+              '<button type="button" class="mini" data-act="copy">Copy</button>' +
+              '<button type="button" class="mini" data-act="retry">Retry</button>'
+            : '<button type="button" class="mini" data-act="copy">Copy</button>' +
+              '<button type="button" class="mini" data-act="retry">Retry</button>';
+
+          actionsEl
+            .querySelector('[data-act="copy"]')
+            .addEventListener("click", () => {
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).catch(() => {});
+              }
+              toast("Reply copied");
+            });
+          actionsEl
+            .querySelector('[data-act="retry"]')
+            .addEventListener("click", retryLast);
+
+          stream = null;
+          setStreamingUI(false);
+          renderChatList();
+          updateTopbar();
+        }
+
+        function stopStreamIfAny(userStopped) {
+          if (!stream) return;
+          const s = stream;
+          clearInterval(s.timer);
+          stream = null;
+          const partial = s.textEl.textContent.trim();
+          const caret = s.textEl.querySelector(".caret");
+          if (caret) caret.remove();
+          finishStream(
+            s.chat,
+            s.el,
+            s.textEl,
+            s.actionsEl,
+            partial || "(no reply yet)",
+            true,
+          );
+        }
+
+        function setStreamingUI(on) {
+          btnSend.textContent = on ? "Stop" : "Send";
+          btnSend.classList.toggle("primary", true);
+          inputEl.disabled = on;
+          if (!on) inputEl.focus();
+        }
+
+        function retryLast() {
+          if (!currentChatId) return;
+          const chat = getChat(currentChatId);
+          if (!chat) return;
+          // remove trailing assistant message(s)
+          while (
+            chat.messages.length &&
+            chat.messages[chat.messages.length - 1].role === "assistant"
+          ) {
+            chat.messages.pop();
+          }
+          renderMessages();
+          startStream(chat, DEMO_REPLY);
+        }
+
+        /* ============================================================
+   Modal
+   ============================================================ */
+        let modalHandler = null;
+
+        function openModal({
+          title,
+          body,
+          confirmLabel,
+          danger,
+          input,
+          onConfirm,
+        }) {
+          $("#modalTitle").textContent = title;
+          $("#modalBody").textContent = body;
+          const confirmBtn = $("#modalConfirm");
+          confirmBtn.textContent = confirmLabel || "Confirm";
+          confirmBtn.className = "btn " + (danger ? "danger" : "primary");
+
+          const inputField = $("#modalInput");
+          if (typeof input === "string") {
+            inputField.hidden = false;
+            inputField.value = input;
+          } else {
+            inputField.hidden = true;
+            inputField.value = "";
+          }
+
+          modalHandler = onConfirm;
+          $("#modal").hidden = false;
+          setTimeout(
+            () => (inputField.hidden ? confirmBtn : inputField).focus(),
+            30,
+          );
+        }
+
+        function closeModal() {
+          $("#modal").hidden = true;
+          modalHandler = null;
+        }
+
+        $("#modalCancel").addEventListener("click", closeModal);
+        $("#modalConfirm").addEventListener("click", () => {
+          const fn = modalHandler;
+          const value = $("#modalInput").value;
+          closeModal();
+          if (fn) fn(value);
+        });
+        $("#modal").addEventListener("click", (e) => {
+          if (e.target === $("#modal")) closeModal();
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && !$("#modal").hidden) closeModal();
+        });
+
+        /* ============================================================
+   Settings interactions
+   ============================================================ */
+        $$("[data-theme-set]").forEach((btn) => {
+          btn.addEventListener("click", () => setTheme(btn.dataset.themeSet));
+        });
+
+        $$('input[name="perf"]').forEach((radio) => {
+          radio.addEventListener("change", () => {
+            const notice = $("#gpuNotice");
+            if (radio.value === "gpu" && radio.checked) {
+              notice.hidden = false;
+              $("#gpuNoticeBody").textContent =
+                "Civra switched to CPU mode. Chats still work normally — replies may take a little longer.";
+            } else {
+              notice.hidden = true;
+            }
+          });
+        });
+
+        /* ============================================================
+   GPU banner
+   ============================================================ */
+        function showGpuBanner() {
+          bannerSlot.innerHTML = `
+    <div class="banner" role="status">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 4.5L21 19.5H3L12 4.5z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+        <path d="M12 10.5v4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+        <circle cx="12" cy="17" r="1" fill="currentColor"/>
+      </svg>
+      <div class="banner-text">
+        <strong>Graphics card mode isn’t available on this computer</strong>
+        <span>Civra switched to CPU mode automatically. Chats still work — replies may take a little longer.</span>
+      </div>
+      <div class="banner-actions">
+        <button class="btn ghost small" id="bannerSettings">Review settings</button>
+        <button class="icon-btn" id="bannerClose" title="Dismiss" aria-label="Dismiss">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>`;
+
+          $("#bannerSettings").addEventListener("click", () =>
+            showView("settings"),
+          );
+          $("#bannerClose").addEventListener("click", () => {
+            bannerSlot.innerHTML = "";
+          });
+        }
+        function clearBanner() {
+          bannerSlot.innerHTML = "";
+        }
+
+        /* ============================================================
+   Prototype state switcher
+   ============================================================ */
+        function applyState(name) {
+          $$("#protoBody [data-state]").forEach((b) =>
+            b.classList.toggle("on", b.dataset.state === name),
+          );
+          clearBanner();
+
+          switch (name) {
+            case "consent":
+              goSetup("consent");
+              break;
+            case "download":
+              goSetup("download");
+              break;
+            case "download-error":
+              goSetup("download-error");
+              break;
+            case "verify":
+              goSetup("verify");
+              break;
+            case "verify-error":
+              goSetup("verify-error");
+              break;
+
+            case "empty":
+              goApp("chat");
+              currentChatId = null;
+              searchInput.value = "";
+              renderAll();
+              break;
+
+            case "streaming": {
+              goApp("chat");
+              const id = "demo-stream";
+              chats = chats.filter((c) => c.id !== id);
+              chats.unshift({
+                id,
+                title: "Weekly meal prep",
+                updated: "Just now",
+                messages: [
+                  {
+                    role: "user",
+                    text: "Can you help me plan a simple weekly meal prep routine?",
+                  },
+                ],
+              });
+              currentChatId = id;
+              renderAll();
+              startStream(getChat(id), DEMO_REPLY);
+              break;
+            }
+
+            case "stopped": {
+              goApp("chat");
+              const id = "demo-stopped";
+              chats = chats.filter((c) => c.id !== id);
+              chats.unshift({
+                id,
+                title: "Weekly meal prep",
+                updated: "Just now",
+                messages: [
+                  {
+                    role: "user",
+                    text: "Can you help me plan a simple weekly meal prep routine?",
+                  },
+                  {
+                    role: "assistant",
+                    text: "Sure — a simple routine works better than a complicated one. Pick two proteins, two grains and three vegetables for the week. Cook the grains and proteins in one session",
+                    stopped: true,
+                  },
+                ],
+              });
+              currentChatId = id;
+              renderAll();
+              break;
+            }
+
+            case "history":
+              goApp("chat");
+              currentChatId = "c1";
+              searchInput.value = "meal";
+              renderAll();
+              break;
+
+            case "settings":
+              goApp("settings");
+              $("#gpuNotice").hidden = true;
+              $$('input[name="perf"]').forEach((r) => {
+                r.checked = r.value === "cpu";
+              });
+              break;
+
+            case "gpu":
+              goApp("chat");
+              currentChatId = null;
+              renderAll();
+              showGpuBanner();
+              break;
+          }
+        }
+
+        $$("#protoBody [data-state]").forEach((btn) => {
+          btn.addEventListener("click", () => applyState(btn.dataset.state));
+        });
+        $$("#protoBody [data-theme-btn]").forEach((btn) => {
+          btn.addEventListener("click", () => setTheme(btn.dataset.themeBtn));
+        });
+
+        $("#protoToggle").addEventListener("click", (e) => {
+          const panel = $("#proto");
+          const collapsed = panel.classList.toggle("collapsed");
+          e.currentTarget.textContent = collapsed ? "+" : "−";
+          e.currentTarget.setAttribute("aria-expanded", String(!collapsed));
+          e.currentTarget.setAttribute(
+            "aria-label",
+            collapsed ? "Expand prototype panel" : "Collapse prototype panel",
+          );
+        });
+
+        /* ============================================================
+   Boot
+   ============================================================ */
+        setTheme("light");
+        $$("#protoBody [data-state]").forEach((b) =>
+          b.classList.toggle("on", b.dataset.state === "consent"),
+        );
+        goSetup("consent");
+        autoGrow();
+      })();
+    </script>
+  </body>
+</html>

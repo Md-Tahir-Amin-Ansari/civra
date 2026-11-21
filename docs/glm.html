@@ -1,0 +1,3331 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Civra — Private Offline AI Chat · Interactive UI Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ---------- Tokens ---------- */
+      :root {
+        --desk: #262219;
+        --deskrail: #1d1a14;
+        --deskline: #3a352a;
+        --bg: #f6f3ec;
+        --bg2: #efebe0;
+        --bg3: #e7e1d2;
+        --line: #dcd5c3;
+        --line2: #c7bea8;
+        --ink: #23201a;
+        --ink2: #665f4f;
+        --ink3: #98917d;
+        --accent: #2e5f4b;
+        --accent-h: #26513e;
+        --on-accent: #f4f1e7;
+        --acc-soft: #e3eae1;
+        --acc-line: #becdbf;
+        --danger: #a33a2b;
+        --danger-soft: #f2e0da;
+        --warn: #8a6014;
+        --warn-soft: #f2e6cb;
+        --user-bub: #2e5f4b;
+        --user-ink: #f2f5ef;
+        --toast-bg: #26221a;
+        --toast-ink: #f1ede1;
+        --focus: #2e5f4b;
+        --shadow:
+          0 30px 70px rgba(15, 12, 6, 0.5), 0 4px 14px rgba(15, 12, 6, 0.35);
+      }
+      [data-theme="dark"] {
+        --desk: #0f0d0a;
+        --deskrail: #141209;
+        --deskline: #2a251c;
+        --bg: #1b1914;
+        --bg2: #16140f;
+        --bg3: #242019;
+        --line: #2f2a20;
+        --line2: #3f392c;
+        --ink: #ece6d7;
+        --ink2: #a89f8a;
+        --ink3: #7c7462;
+        --accent: #8cc0a5;
+        --accent-h: #9dcdb4;
+        --on-accent: #14261d;
+        --acc-soft: #233329;
+        --acc-line: #3b5546;
+        --danger: #e28e79;
+        --danger-soft: #3b241d;
+        --warn: #d9b25e;
+        --warn-soft: #362c16;
+        --user-bub: #2c5546;
+        --user-ink: #ecf2ec;
+        --toast-bg: #2b261d;
+        --toast-ink: #f1ede1;
+        --focus: #8cc0a5;
+        --shadow: 0 30px 70px rgba(0, 0, 0, 0.7), 0 4px 14px rgba(0, 0, 0, 0.5);
+      }
+      /* ---------- Base ---------- */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        background: var(--desk);
+        color: var(--ink);
+        font:
+          400 14.5px/1.55 Karla,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      ::selection {
+        background: var(--acc-soft);
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        background: none;
+        border: 0;
+        cursor: pointer;
+      }
+      input,
+      textarea {
+        font: inherit;
+        color: inherit;
+      }
+      :focus {
+        outline: none;
+      }
+      :focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+      .i {
+        flex: none;
+        display: inline-block;
+        vertical-align: -3px;
+      }
+      mark {
+        background: var(--warn-soft);
+        color: inherit;
+        border-radius: 3px;
+        padding: 0 1px;
+      }
+      /* ---------- Stage (the "desk") ---------- */
+      .stage {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 26px;
+        padding: 24px;
+      }
+      /* ---------- Reviewer panel ---------- */
+      #navPanel {
+        flex: 0 0 252px;
+        align-self: stretch;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+        background: var(--deskrail);
+        border: 1px solid var(--deskline);
+        border-radius: 12px;
+        padding: 16px 14px;
+        color: #cfc7b4;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease;
+      }
+      body.nav-docked #navPanel {
+        transform: translateX(calc(100% + 40px));
+        opacity: 0;
+        pointer-events: none;
+        position: fixed;
+        right: 0;
+        top: 24px;
+      }
+      .np-kicker {
+        font:
+          500 10px/1 "IBM Plex Mono",
+          monospace;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #8f866f;
+      }
+      .np-title {
+        font:
+          600 16px "Newsreader",
+          serif;
+        color: #f0eadb;
+        margin-top: 4px;
+      }
+      .np-note {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #8f866f;
+        border-bottom: 1px solid var(--deskline);
+        padding-bottom: 12px;
+      }
+      .np-cap {
+        font:
+          500 10px/1 "IBM Plex Mono",
+          monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #8f866f;
+        margin-bottom: 6px;
+      }
+      .np-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .np-group button {
+        text-align: left;
+        font-size: 12.5px;
+        padding: 6px 9px;
+        border-radius: 7px;
+        color: #d8d0bc;
+        border-left: 2px solid transparent;
+      }
+      .np-group button:hover {
+        background: #26221a;
+        color: #f0eadb;
+      }
+      .np-group button.cur {
+        background: #262320;
+        color: #f0eadb;
+        border-left-color: #8cc0a5;
+      }
+      .np-check {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 12.5px;
+        padding: 5px 2px;
+        cursor: pointer;
+      }
+      .np-check input {
+        accent-color: #8cc0a5;
+        width: 14px;
+        height: 14px;
+        cursor: pointer;
+      }
+      .np-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12.5px;
+        padding: 5px 2px;
+        gap: 8px;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--deskline);
+        border-radius: 7px;
+        overflow: hidden;
+      }
+      .seg button {
+        font-size: 11.5px;
+        padding: 4px 10px;
+        color: #a79d85;
+      }
+      .seg button.on {
+        background: #8cc0a5;
+        color: #14261d;
+        font-weight: 600;
+      }
+      .np-reset {
+        margin-top: auto;
+        border: 1px solid var(--deskline);
+        border-radius: 8px;
+        padding: 8px;
+        font-size: 12.5px;
+        color: #d8d0bc;
+      }
+      .np-reset:hover {
+        background: #26221a;
+      }
+      #navTab {
+        position: fixed;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 60;
+        writing-mode: vertical-rl;
+        background: var(--deskrail);
+        color: #d8d0bc;
+        border: 1px solid var(--deskline);
+        border-right: 0;
+        border-radius: 8px 0 0 8px;
+        padding: 14px 7px;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      #navTab:hover {
+        color: #fff;
+      }
+      @media (max-width: 1080px) {
+        body {
+          padding-right: 0;
+        }
+        #navPanel {
+          position: fixed;
+          right: 16px;
+          top: 24px;
+          z-index: 60;
+          max-height: calc(100vh - 48px);
+          box-shadow: var(--shadow);
+        }
+      }
+      /* ---------- Window ---------- */
+      .win {
+        flex: 0 1 1120px;
+        width: 100%;
+        height: min(760px, calc(100vh - 48px));
+        display: flex;
+        flex-direction: column;
+        min-width: 520px;
+        min-height: 460px;
+        background: var(--bg);
+        border: 1px solid var(--line2);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        position: relative;
+      }
+      .win.maxed {
+        flex: 1 1 auto;
+        width: auto;
+        height: calc(100vh - 48px);
+        max-width: none;
+      }
+      /* ---------- Title bar ---------- */
+      .titlebar {
+        flex: none;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--bg2);
+        border-bottom: 1px solid var(--line);
+        padding-left: 14px;
+        user-select: none;
+      }
+      .tb-id {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--accent);
+      }
+      .tb-name {
+        font: 600 13.5px Karla;
+        color: var(--ink);
+        display: flex;
+        align-items: baseline;
+        gap: 9px;
+      }
+      .tb-name span {
+        font: 400 11.5px Karla;
+        color: var(--ink2);
+        letter-spacing: 0.02em;
+      }
+      .tb-right {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding-right: 6px;
+        height: 100%;
+      }
+      .tb-sep {
+        width: 1px;
+        height: 18px;
+        background: var(--line);
+        margin: 0 6px;
+      }
+      .wbtn {
+        width: 42px;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        color: var(--ink2);
+        border-radius: 0;
+      }
+      .wbtn:hover {
+        background: var(--bg3);
+        color: var(--ink);
+      }
+      .wbtn[aria-label="Close"]:hover {
+        background: var(--danger);
+        color: #fff;
+      }
+      /* ---------- Chips & buttons ---------- */
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: var(--ink2);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px 10px;
+        background: var(--bg);
+        white-space: nowrap;
+      }
+      .chip .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: breathe 3.2s ease-in-out infinite;
+      }
+      .chip.warnc {
+        color: var(--warn);
+        border-color: var(--warn);
+      }
+      .chip.warnc .dot {
+        background: var(--warn);
+      }
+      @keyframes breathe {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.45;
+          transform: scale(0.82);
+        }
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 13.5px;
+        border-radius: 9px;
+        padding: 9px 16px;
+        border: 1px solid transparent;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: var(--on-accent);
+      }
+      .btn-primary:hover:not(:disabled) {
+        background: var(--accent-h);
+      }
+      .btn-primary:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .btn-ghost {
+        border-color: var(--line2);
+        color: var(--ink);
+      }
+      .btn-ghost:hover {
+        background: var(--bg3);
+      }
+      .btn-danger {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+      .btn-danger:hover {
+        background: var(--danger-soft);
+      }
+      .btn-block {
+        width: 100%;
+        justify-content: center;
+      }
+      .btn:disabled .i {
+        opacity: 0.5;
+      }
+      .iconbtn {
+        width: 32px;
+        height: 32px;
+        display: inline-grid;
+        place-items: center;
+        border-radius: 8px;
+        color: var(--ink2);
+        flex: none;
+      }
+      .iconbtn:hover {
+        background: var(--bg3);
+        color: var(--ink);
+      }
+      .iconbtn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      /* ---------- Window body ---------- */
+      .win-body {
+        flex: 1;
+        position: relative;
+        display: flex;
+        min-height: 0;
+        overflow: hidden;
+        container-type: inline-size;
+      }
+      /* ---------- Onboarding ---------- */
+      .onboard {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        background: var(--bg);
+        overflow-y: auto;
+        display: flex;
+        justify-content: center;
+        padding: 34px 28px 40px;
+      }
+      .ob-col {
+        width: min(540px, 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .ringwrap {
+        position: relative;
+        width: 128px;
+        height: 128px;
+        margin-bottom: 18px;
+        flex: none;
+      }
+      .ring {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .ring-track {
+        fill: none;
+        stroke: var(--line);
+        stroke-width: 5;
+      }
+      .ring-fill {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 5;
+        stroke-linecap: round;
+        stroke-dasharray: 326.73;
+        stroke-dashoffset: 326.73;
+        transition:
+          stroke-dashoffset 0.18s linear,
+          stroke 0.3s;
+      }
+      .ringwrap[data-mode="verify"] .ring-fill {
+        stroke-dasharray: 3 7;
+        animation: ringspin 1.1s linear infinite;
+        transform-origin: 60px 60px;
+      }
+      .ringwrap[data-mode="warn"] .ring-fill {
+        stroke: var(--warn);
+        stroke-dasharray: 3 7;
+        animation: ringspin 2.4s linear infinite;
+        transform-origin: 60px 60px;
+      }
+      .ringwrap[data-mode="done"] .ring-fill {
+        stroke-dashoffset: 0;
+      }
+      .ring-check {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 60;
+        stroke-dashoffset: 60;
+      }
+      .ringwrap[data-mode="done"] .ring-check {
+        animation: draw 0.5s 0.1s ease forwards;
+      }
+      @keyframes ringspin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes draw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      .ring-center {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: var(--accent);
+      }
+      .ring-center .rc-pct {
+        font:
+          600 27px "Newsreader",
+          serif;
+        color: var(--ink);
+      }
+      .ring-center .rc-mark {
+        display: grid;
+        place-items: center;
+      }
+      .ringwrap[data-mode="verify"] .markdot {
+        animation: breathe 1.4s ease-in-out infinite;
+      }
+      .ring-center .rc-alert {
+        color: var(--warn);
+      }
+      .ob-step {
+        font:
+          500 10.5px "IBM Plex Mono",
+          monospace;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--ink2);
+        margin-bottom: 10px;
+      }
+      .ob-stage {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+      }
+      .ob-stage h1 {
+        font:
+          500 29px/1.15 "Newsreader",
+          serif;
+        letter-spacing: -0.01em;
+      }
+      .ob-sub {
+        color: var(--ink2);
+        max-width: 44ch;
+      }
+      .modelcard {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--bg2);
+        text-align: left;
+        overflow: hidden;
+      }
+      .mc-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--line);
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 15px;
+      }
+      .mc-tag {
+        margin-left: auto;
+        font: 400 12px Karla;
+        color: var(--ink2);
+      }
+      .mc-rows div {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 9px 16px;
+        font-size: 13.5px;
+      }
+      .mc-rows div + div {
+        border-top: 1px solid var(--line);
+      }
+      .mc-rows span {
+        color: var(--ink2);
+      }
+      .mc-rows b {
+        font-weight: 600;
+        text-align: right;
+      }
+      .ob-checks {
+        list-style: none;
+        text-align: left;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .ob-checks li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        color: var(--ink);
+        font-size: 13.5px;
+      }
+      .ob-checks .i {
+        color: var(--accent);
+        margin-top: 2px;
+      }
+      .consent {
+        display: flex;
+        gap: 11px;
+        align-items: flex-start;
+        text-align: left;
+        width: 100%;
+        border: 1px solid var(--line2);
+        border-radius: 10px;
+        padding: 13px 14px;
+        cursor: pointer;
+        background: var(--bg);
+      }
+      .consent:has(input:focus-visible) {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+      .consent input {
+        width: 16px;
+        height: 16px;
+        margin-top: 2px;
+        accent-color: var(--accent);
+        cursor: pointer;
+        flex: none;
+      }
+      .consent span {
+        font-size: 13.5px;
+      }
+      .ob-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 2px;
+      }
+      .ob-fine {
+        font-size: 12px;
+        color: var(--ink2);
+        max-width: 52ch;
+        line-height: 1.55;
+        margin-top: 6px;
+      }
+      .ob-note {
+        font-size: 12.5px;
+        color: var(--ink2);
+        max-width: 46ch;
+      }
+      .dl-card {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--bg2);
+        text-align: left;
+      }
+      .dl-card .dl-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 16px;
+        font-size: 13.5px;
+      }
+      .dl-card .dl-row + .dl-row {
+        border-top: 1px solid var(--line);
+      }
+      .dl-card span {
+        color: var(--ink2);
+      }
+      .wwwn {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        text-align: left;
+        background: var(--bg2);
+      }
+      .wwwn > div {
+        padding: 13px 17px;
+      }
+      .wwwn > div + div {
+        border-top: 1px solid var(--line);
+      }
+      .wwwn-h {
+        font: 700 10.5px Karla;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 4px;
+      }
+      .wwwn p {
+        font-size: 13.5px;
+        color: var(--ink);
+      }
+      .techdetails {
+        width: 100%;
+        text-align: left;
+        border: 1px dashed var(--line2);
+        border-radius: 10px;
+        padding: 12px 15px;
+        font:
+          400 12px/1.7 "IBM Plex Mono",
+          monospace;
+        color: var(--ink2);
+        background: var(--bg2);
+      }
+      .techdetails b {
+        color: var(--ink);
+        font-weight: 500;
+        float: right;
+      }
+      .techdetails div {
+        overflow: hidden;
+      }
+      /* ---------- App shell ---------- */
+      .app {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+        position: relative;
+      }
+      .sidebar {
+        flex: 0 0 264px;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg2);
+        border-right: 1px solid var(--line);
+        min-height: 0;
+      }
+      .sb-top {
+        padding: 12px 12px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+      }
+      .sb-search {
+        position: relative;
+      }
+      .sb-search .i {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--ink3);
+        pointer-events: none;
+      }
+      .sb-search input {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: var(--bg);
+        padding: 8px 10px 8px 32px;
+        font-size: 13px;
+        color: var(--ink);
+      }
+      .sb-search input::placeholder {
+        color: var(--ink3);
+      }
+      .sb-search input:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 1px;
+      }
+      .sb-count {
+        font-size: 11.5px;
+        color: var(--ink2);
+        padding: 0 2px;
+      }
+      .sb-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 4px 8px 8px;
+        min-height: 0;
+      }
+      .chat-item {
+        position: relative;
+        border-radius: 9px;
+        margin-bottom: 2px;
+      }
+      .chat-item .ci-main {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 8px 62px 8px 10px;
+        border-radius: 9px;
+      }
+      .chat-item .ci-main:hover {
+        background: var(--bg3);
+      }
+      .chat-item.active .ci-main {
+        background: var(--acc-soft);
+      }
+      .ci-title {
+        display: block;
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .ci-meta {
+        display: block;
+        font-size: 11.5px;
+        color: var(--ink2);
+        margin-top: 1px;
+      }
+      .ci-actions {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: none;
+        gap: 1px;
+        background: var(--bg2);
+        border-radius: 7px;
+      }
+      .chat-item:hover .ci-actions,
+      .chat-item:focus-within .ci-actions {
+        display: flex;
+      }
+      .chat-item .iconbtn {
+        width: 26px;
+        height: 26px;
+      }
+      .sb-empty {
+        padding: 18px 16px;
+        font-size: 12.5px;
+        color: var(--ink2);
+        line-height: 1.6;
+        text-align: center;
+      }
+      .sb-foot {
+        border-top: 1px solid var(--line);
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .sb-model {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--ink2);
+        padding: 0 2px;
+      }
+      .sb-model .i {
+        color: var(--accent);
+      }
+      .scrim {
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 12, 6, 0.4);
+        z-index: 29;
+      }
+      /* ---------- Chat pane ---------- */
+      .chatpane {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+      }
+      .cp-head {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--line);
+        min-height: 52px;
+      }
+      #sidebarToggle {
+        display: none;
+      }
+      .cp-title {
+        font:
+          500 17px "Newsreader",
+          serif;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+      }
+      .cp-chips {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+      }
+      #banner {
+        flex: none;
+        margin: 10px 16px 0;
+      }
+      .banner {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 13px;
+        line-height: 1.5;
+        border: 1px solid var(--acc-line);
+        background: var(--acc-soft);
+      }
+      .banner.warn {
+        border-color: var(--warn);
+        background: var(--warn-soft);
+      }
+      .banner .i {
+        margin-top: 2px;
+        color: var(--accent);
+      }
+      .banner.warn .i {
+        color: var(--warn);
+      }
+      .banner .b-txt {
+        flex: 1;
+        min-width: 0;
+      }
+      .banner .b-txt details {
+        margin-top: 4px;
+      }
+      .banner .b-txt summary {
+        cursor: pointer;
+        font-size: 12px;
+        color: var(--ink2);
+      }
+      .banner .mini-link {
+        font-weight: 700;
+        font-size: 12.5px;
+        color: var(--accent);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        align-self: center;
+        white-space: nowrap;
+      }
+      .msgscroll {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+      }
+      .greeting {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 7vh 24px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .greeting h2 {
+        font:
+          italic 500 34px/1.1 "Newsreader",
+          serif;
+        letter-spacing: -0.01em;
+      }
+      .greeting p {
+        color: var(--ink2);
+      }
+      .starters {
+        margin-top: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-start;
+      }
+      .starter {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-size: 13.5px;
+        color: var(--ink);
+        text-align: left;
+        max-width: 440px;
+        background: var(--bg);
+      }
+      .starter .i {
+        color: var(--accent);
+      }
+      .starter:hover {
+        border-color: var(--accent);
+        background: var(--acc-soft);
+      }
+      .msglist {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 18px 24px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .msg {
+        display: flex;
+        gap: 11px;
+      }
+      .msg .avatar {
+        flex: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: var(--acc-soft);
+        color: var(--accent);
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--acc-line);
+      }
+      .msg.ai.streaming .markdot {
+        animation: breathe 1.2s ease-in-out infinite;
+      }
+      .m-body {
+        min-width: 0;
+        max-width: 580px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .msg.user {
+        justify-content: flex-end;
+      }
+      .msg.user .m-text {
+        background: var(--user-bub);
+        color: var(--user-ink);
+        padding: 9px 14px;
+        border-radius: 14px 14px 3px 14px;
+        max-width: 520px;
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+      }
+      .msg.ai .m-text {
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+        font-size: 14.5px;
+      }
+      .msg.ai .m-text.streaming::after {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 15px;
+        background: var(--accent);
+        margin-left: 3px;
+        vertical-align: -2px;
+        animation: blink 1s steps(2) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .stopnote {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12.5px;
+        color: var(--warn);
+        border-left: 3px solid var(--warn);
+        padding: 4px 10px;
+        background: var(--warn-soft);
+        border-radius: 0 8px 8px 0;
+        width: fit-content;
+      }
+      .m-acts {
+        display: flex;
+        gap: 4px;
+      }
+      .act {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink2);
+        border: 1px solid transparent;
+        border-radius: 7px;
+        padding: 4px 8px;
+      }
+      .act:hover {
+        background: var(--bg3);
+        color: var(--ink);
+      }
+      /* ---------- Composer ---------- */
+      .composer-wrap {
+        flex: none;
+        padding: 6px 24px 14px;
+        max-width: 728px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      .disclaimer {
+        display: flex;
+        gap: 7px;
+        align-items: flex-start;
+        font-size: 11.5px;
+        line-height: 1.45;
+        color: var(--ink2);
+        padding: 0 2px 7px;
+      }
+      .disclaimer .i {
+        color: var(--accent);
+        margin-top: 1px;
+      }
+      .composer {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        border: 1px solid var(--line2);
+        border-radius: 13px;
+        background: var(--bg2);
+        padding: 9px 9px 9px 14px;
+        transition: border-color 0.15s;
+      }
+      .composer:focus-within {
+        border-color: var(--accent);
+      }
+      .composer textarea {
+        flex: 1;
+        border: 0;
+        background: none;
+        resize: none;
+        max-height: 140px;
+        line-height: 1.5;
+        font-size: 14.5px;
+        padding: 5px 0;
+        color: var(--ink);
+      }
+      .composer textarea::placeholder {
+        color: var(--ink3);
+      }
+      .sendbtn {
+        flex: none;
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: var(--accent);
+        color: var(--on-accent);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .sendbtn:hover {
+        background: var(--accent-h);
+      }
+      .sendbtn.stop {
+        width: auto;
+        padding: 0 14px;
+        background: var(--bg);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+      }
+      .sendbtn.stop:hover {
+        background: var(--danger-soft);
+      }
+      .composer-hint {
+        font-size: 11px;
+        color: var(--ink3);
+        padding: 6px 4px 0;
+        text-align: center;
+      }
+      /* ---------- Small window ---------- */
+      @container (max-width:719px) {
+        .sidebar {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          z-index: 30;
+          transform: translateX(-105%);
+          transition: transform 0.22s ease;
+          box-shadow: var(--shadow);
+        }
+        .win.sb-open .sidebar {
+          transform: none;
+        }
+        #sidebarToggle {
+          display: inline-grid;
+        }
+        .composer-wrap {
+          padding: 6px 14px 12px;
+        }
+        .msglist {
+          padding: 14px 14px 6px;
+        }
+        .greeting {
+          padding: 5vh 16px 16px;
+        }
+      }
+      /* ---------- Modal ---------- */
+      .modal-scrim {
+        position: absolute;
+        inset: 0;
+        z-index: 40;
+        background: rgba(15, 12, 6, 0.45);
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+      .dialog {
+        width: min(580px, 100%);
+        max-height: 100%;
+        overflow-y: auto;
+        background: var(--bg);
+        border: 1px solid var(--line2);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 22px 24px;
+      }
+      .d-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 6px;
+      }
+      .d-head h2 {
+        font:
+          500 21px "Newsreader",
+          serif;
+        flex: 1;
+      }
+      .d-sec {
+        margin-top: 18px;
+      }
+      .d-cap {
+        font: 700 10.5px Karla;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--ink2);
+        margin-bottom: 8px;
+      }
+      .seg-lg {
+        display: inline-flex;
+        border: 1px solid var(--line2);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .seg-lg button {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink2);
+      }
+      .seg-lg button.on {
+        background: var(--accent);
+        color: var(--on-accent);
+      }
+      .opt {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+        text-align: left;
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        align-items: flex-start;
+        background: var(--bg);
+      }
+      .opt .radio {
+        flex: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid var(--line2);
+        margin-top: 2px;
+        position: relative;
+      }
+      .opt.sel {
+        border-color: var(--accent);
+      }
+      .opt.sel .radio {
+        border-color: var(--accent);
+      }
+      .opt.sel .radio::after {
+        content: "";
+        position: absolute;
+        inset: 2.5px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      .opt b {
+        font-size: 13.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .opt p {
+        font-size: 12.5px;
+        color: var(--ink2);
+        margin-top: 2px;
+      }
+      .opt .tag {
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border-radius: 5px;
+        padding: 2px 7px;
+      }
+      .tag.ok {
+        background: var(--acc-soft);
+        color: var(--accent);
+      }
+      .tag.exp {
+        background: var(--warn-soft);
+        color: var(--warn);
+      }
+      .tag.bad {
+        background: var(--danger-soft);
+        color: var(--danger);
+      }
+      .tag.lock {
+        background: var(--bg3);
+        color: var(--ink2);
+      }
+      .opt:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      .gpu-test {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 11px 14px;
+        font-size: 13px;
+        background: var(--bg2);
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        margin-top: 4px;
+      }
+      .gpu-test.err {
+        border-color: var(--danger);
+        background: var(--danger-soft);
+      }
+      .spinner {
+        flex: none;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        border: 2px solid var(--line2);
+        border-top-color: var(--accent);
+        animation: ringspin 0.8s linear infinite;
+        margin-top: 2px;
+      }
+      .d-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13.5px;
+      }
+      .d-row .spacer {
+        flex: 1;
+      }
+      .d-note {
+        font-size: 12px;
+        color: var(--ink2);
+        line-height: 1.55;
+        margin-top: 10px;
+      }
+      .d-about {
+        font:
+          400 11.5px/1.7 "IBM Plex Mono",
+          monospace;
+        color: var(--ink2);
+        border-top: 1px solid var(--line);
+        margin-top: 20px;
+        padding-top: 12px;
+      }
+      .link-danger {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--danger);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .link-danger:hover {
+        background: var(--danger-soft);
+      }
+      /* ---------- Toasts ---------- */
+      #toasts {
+        position: absolute;
+        right: 16px;
+        bottom: 16px;
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-end;
+      }
+      .toast {
+        display: flex;
+        gap: 9px;
+        align-items: flex-start;
+        max-width: 360px;
+        background: var(--toast-bg);
+        color: var(--toast-ink);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 13px;
+        line-height: 1.45;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        animation: toastin 0.22s ease;
+      }
+      .toast .i {
+        margin-top: 2px;
+      }
+      .toast.ok .i {
+        color: #8cc0a5;
+      }
+      .toast.warn .i {
+        color: #d9b25e;
+      }
+      .toast.info .i {
+        color: #9fb8ce;
+      }
+      @keyframes toastin {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      /* ---------- Scrollbars ---------- */
+      .sb-list::-webkit-scrollbar,
+      .msgscroll::-webkit-scrollbar,
+      .dialog::-webkit-scrollbar,
+      .onboard::-webkit-scrollbar,
+      #navPanel::-webkit-scrollbar {
+        width: 9px;
+      }
+      .sb-list::-webkit-scrollbar-thumb,
+      .msgscroll::-webkit-scrollbar-thumb,
+      .dialog::-webkit-scrollbar-thumb,
+      .onboard::-webkit-scrollbar-thumb,
+      #navPanel::-webkit-scrollbar-thumb {
+        background: var(--line2);
+        border-radius: 8px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="stage">
+      <!-- ============ CIVRA WINDOW ============ -->
+      <div class="win" id="win">
+        <header class="titlebar">
+          <div class="tb-id">
+            <span data-ic="mark" data-size="20"></span>
+            <div class="tb-name">
+              Civra <span>Private Offline AI Chat</span>
+            </div>
+          </div>
+          <div class="tb-right">
+            <span class="chip" id="connChip"></span>
+            <button
+              class="iconbtn"
+              id="themeBtn"
+              aria-label="Switch between light and dark theme"
+            ></button>
+            <button
+              class="iconbtn"
+              id="tbSettings"
+              data-ic="sliders"
+              aria-label="Settings"
+              title="Settings"
+            ></button>
+            <span class="tb-sep"></span>
+            <button
+              class="wbtn"
+              id="winMin"
+              aria-label="Minimize"
+              title="Minimize"
+            >
+              <span data-ic="minline"></span>
+            </button>
+            <button
+              class="wbtn"
+              id="winMax"
+              aria-label="Maximize"
+              title="Maximize"
+            >
+              <span data-ic="maxrect"></span>
+            </button>
+            <button class="wbtn" id="winClose" aria-label="Close" title="Close">
+              <span data-ic="x"></span>
+            </button>
+          </div>
+        </header>
+
+        <div class="win-body" id="winBody">
+          <!-- ============ APP SHELL ============ -->
+          <section class="app" id="app" hidden>
+            <aside class="sidebar" id="sidebar" aria-label="Chat history">
+              <div class="sb-top">
+                <button class="btn btn-primary btn-block" id="btnNewChat">
+                  <span data-ic="plus"></span>New chat
+                </button>
+                <div class="sb-search">
+                  <span data-ic="search" data-size="15"></span>
+                  <input
+                    id="searchInput"
+                    type="search"
+                    placeholder="Search chats"
+                    aria-label="Search chats"
+                    autocomplete="off"
+                  />
+                </div>
+                <div class="sb-count" id="searchCount" hidden></div>
+              </div>
+              <div class="sb-list" id="chatList" role="list"></div>
+              <div class="sb-empty" id="sidebarEmpty" hidden>
+                No chats yet.<br />Your conversations will be saved here — on
+                this PC only.
+              </div>
+              <div class="sb-foot">
+                <div class="sb-model">
+                  <span data-ic="drive" data-size="15"></span
+                  ><span>Civra Mind 1 · 2.4 GB on this PC</span>
+                </div>
+                <button class="btn btn-ghost btn-block" id="footSettings">
+                  <span data-ic="sliders"></span>Settings
+                </button>
+              </div>
+            </aside>
+            <div class="scrim" id="scrim" hidden></div>
+
+            <section class="chatpane">
+              <header class="cp-head">
+                <button
+                  class="iconbtn"
+                  id="sidebarToggle"
+                  aria-label="Show chats"
+                  title="Show chats"
+                >
+                  <span data-ic="menu"></span>
+                </button>
+                <div class="cp-title" id="chatTitle">New chat</div>
+                <div class="cp-chips">
+                  <span
+                    class="chip"
+                    id="modeChip"
+                    title="Civra runs on this PC using its processor. Nothing is sent over the internet."
+                    ><span class="dot"></span
+                    ><span id="modeChipTxt">Local · CPU</span></span
+                  >
+                </div>
+              </header>
+              <div id="banner" hidden></div>
+              <div class="msgscroll" id="msgscroll">
+                <div class="greeting" id="greeting">
+                  <h2 id="greetTitle">Good evening.</h2>
+                  <p>
+                    Everything you write stays on this PC — no internet needed.
+                    Ask anything below.
+                  </p>
+                  <div class="starters" id="starters"></div>
+                </div>
+                <div class="msglist" id="msglist"></div>
+              </div>
+              <div class="composer-wrap">
+                <div class="disclaimer">
+                  <span data-ic="shieldcheck" data-size="15"></span
+                  ><span
+                    >Civra runs entirely on this PC, so your chats never leave
+                    it. Answers are generated by a model and can be inaccurate —
+                    double-check anything important.</span
+                  >
+                </div>
+                <div class="composer">
+                  <textarea
+                    id="input"
+                    rows="1"
+                    placeholder="Message Civra"
+                    aria-label="Message Civra"
+                  ></textarea>
+                  <button
+                    class="sendbtn"
+                    id="sendBtn"
+                    title="Send"
+                    aria-label="Send"
+                  >
+                    <span data-ic="arrowup" data-size="18"></span>
+                  </button>
+                </div>
+                <div class="composer-hint" id="composerHint">
+                  Press Enter to send · Shift + Enter for a new line
+                </div>
+              </div>
+            </section>
+          </section>
+
+          <!-- ============ ONBOARDING OVERLAY ============ -->
+          <section class="onboard" id="onboard">
+            <div class="ob-col">
+              <div class="ringwrap" id="ringWrap" data-mode="idle">
+                <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="ring-track" cx="60" cy="60" r="52" />
+                  <circle
+                    class="ring-fill"
+                    id="ringFill"
+                    cx="60"
+                    cy="60"
+                    r="52"
+                    transform="rotate(-90 60 60)"
+                  />
+                  <path
+                    class="ring-check"
+                    id="ringCheck"
+                    d="M41 62l13 13 26-28"
+                  />
+                </svg>
+                <div class="ring-center">
+                  <span class="rc-mark" id="rcMark"
+                    ><span data-ic="mark" data-size="42"></span
+                  ></span>
+                  <span class="rc-pct" id="ringPct" hidden>0%</span>
+                  <span class="rc-alert" id="rcAlert" hidden
+                    ><span data-ic="alerttri" data-size="34"></span
+                  ></span>
+                </div>
+              </div>
+
+              <div class="ob-step" id="obStep" hidden></div>
+
+              <!-- 1 · Consent -->
+              <div class="ob-stage" id="obConsent">
+                <h1>Welcome to Civra</h1>
+                <p class="ob-sub">
+                  Private AI chat that runs entirely on your own PC. One quick
+                  setup, and after that no internet is needed.
+                </p>
+                <div class="modelcard">
+                  <div class="mc-head">
+                    <span data-ic="mark" data-size="22"></span>Civra Mind 1<span
+                      class="mc-tag"
+                      >the one model Civra uses</span
+                    >
+                  </div>
+                  <div class="mc-rows">
+                    <div>
+                      <span>Space needed on this PC</span><b>about 2.4 GB</b>
+                    </div>
+                    <div>
+                      <span>Internet</span><b>once, for this download only</b>
+                    </div>
+                    <div>
+                      <span>After setup</span
+                      ><b>chatting works fully offline</b>
+                    </div>
+                  </div>
+                </div>
+                <ul class="ob-checks">
+                  <li>
+                    <span data-ic="check" data-size="16"></span>Chats are
+                    processed on this PC — nothing is sent anywhere.
+                  </li>
+                  <li>
+                    <span data-ic="check" data-size="16"></span>No account, no
+                    sign-in, no tracking.
+                  </li>
+                  <li>
+                    <span data-ic="check" data-size="16"></span>Answers come
+                    from one fixed, approved model — and like any AI, they can
+                    be wrong.
+                  </li>
+                </ul>
+                <label class="consent">
+                  <input type="checkbox" id="consentChk" />
+                  <span
+                    >I agree to download the model (about 2.4 GB) over my
+                    internet connection — this one time.</span
+                  >
+                </label>
+                <div class="ob-actions">
+                  <button class="btn btn-primary" id="btnDownload" disabled>
+                    <span data-ic="drive" data-size="16"></span>Download model
+                  </button>
+                  <button
+                    class="btn btn-ghost"
+                    id="btnDetails"
+                    aria-expanded="false"
+                  >
+                    <span data-ic="chevd" data-size="16"></span>View technical
+                    details
+                  </button>
+                </div>
+                <div class="techdetails" id="techDetails" hidden></div>
+                <p class="ob-fine">
+                  Local processing keeps your chats on this PC; like any
+                  software, it is not a guarantee of absolute security. AI
+                  answers can be inaccurate, so check anything important before
+                  relying on it.
+                </p>
+              </div>
+
+              <!-- 2 · Downloading -->
+              <div class="ob-stage" id="obDownload" hidden>
+                <h1>Downloading the model</h1>
+                <p class="ob-sub">
+                  About 2.4 GB, one time only. After this step, Civra works
+                  without internet.
+                </p>
+                <div class="dl-card">
+                  <div class="dl-row">
+                    <span>Downloaded</span><b id="dlAmount">0 of 2,457 MB</b>
+                  </div>
+                  <div class="dl-row">
+                    <span>Speed</span><b id="dlSpeed">—</b>
+                  </div>
+                  <div class="dl-row">
+                    <span>Time left</span><b id="dlEta">—</b>
+                  </div>
+                </div>
+                <p class="ob-note">
+                  Keep this window open. If the download is interrupted, Civra
+                  picks up where it stopped — you won't start over.
+                </p>
+                <div class="ob-actions">
+                  <button class="btn btn-ghost" id="btnCancelDl">
+                    Cancel download
+                  </button>
+                </div>
+              </div>
+
+              <!-- 3 · Download failed -->
+              <div class="ob-stage" id="obDlFail" hidden>
+                <h1>The download was interrupted</h1>
+                <p class="ob-sub">
+                  No problem — everything downloaded so far is saved safely on
+                  this PC.
+                </p>
+                <div class="wwwn">
+                  <div>
+                    <div class="wwwn-h">What happened</div>
+                    <p>
+                      Civra lost the internet connection partway through. About
+                      <b id="dlFailPct">62%</b> of the file is already on your
+                      PC.
+                    </p>
+                  </div>
+                  <div>
+                    <div class="wwwn-h">What you can do next</div>
+                    <p>
+                      Reconnect to the internet and try again. Civra continues
+                      from where it stopped, so the rest is usually quick.
+                    </p>
+                  </div>
+                </div>
+                <div class="ob-actions">
+                  <button class="btn btn-primary" id="btnRetryDl">
+                    <span data-ic="retry" data-size="16"></span>Resume download
+                  </button>
+                  <button class="btn btn-ghost" id="btnBackConsent">
+                    Back
+                  </button>
+                </div>
+              </div>
+
+              <!-- 4 · Verifying -->
+              <div class="ob-stage" id="obVerify" hidden>
+                <h1>Checking the model</h1>
+                <p class="ob-sub" id="verifyLine">
+                  Making sure the file is complete…
+                </p>
+                <p class="ob-note">
+                  This safety check runs once, before first use. It needs no
+                  internet.
+                </p>
+              </div>
+
+              <!-- 5 · Verification failed -->
+              <div class="ob-stage" id="obVerifyFail" hidden>
+                <h1>The model didn't pass its safety check</h1>
+                <p class="ob-sub">Civra stopped before using anything.</p>
+                <div class="wwwn">
+                  <div>
+                    <div class="wwwn-h">What happened</div>
+                    <p>
+                      The downloaded file turned out to be incomplete or
+                      damaged. Civra refused to run it — nothing was executed.
+                    </p>
+                  </div>
+                  <div>
+                    <div class="wwwn-h">What you can do next</div>
+                    <p>
+                      Delete the broken file and download it again. Internet is
+                      needed one more time; after that you are offline for good.
+                    </p>
+                  </div>
+                </div>
+                <div class="ob-actions">
+                  <button class="btn btn-primary" id="btnRedownload">
+                    <span data-ic="retry" data-size="16"></span>Delete and
+                    re-download
+                  </button>
+                  <button class="btn btn-ghost" id="btnCancelSetup">
+                    Cancel setup
+                  </button>
+                </div>
+              </div>
+
+              <!-- 6 · Done -->
+              <div class="ob-stage" id="obDone" hidden>
+                <h1>All checks passed</h1>
+                <p class="ob-sub">Starting Civra…</p>
+              </div>
+            </div>
+          </section>
+
+          <div id="modalRoot"></div>
+          <div id="toasts" role="status" aria-live="polite"></div>
+          <div class="sr" id="sr" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <!-- ============ REVIEWER PANEL ============ -->
+      <aside id="navPanel" aria-label="Mockup state navigator">
+        <div
+          style="
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+          "
+        >
+          <div>
+            <div class="np-kicker">Interactive mockup</div>
+            <div class="np-title">Civra · UI states</div>
+          </div>
+          <button
+            style="color: #8f866f; padding: 4px"
+            id="navHide"
+            aria-label="Hide reviewer panel"
+            title="Hide panel"
+          >
+            <span data-ic="chevr" data-size="18"></span>
+          </button>
+        </div>
+        <p class="np-note">
+          Reviewer controls for jumping between the required states. This panel
+          is not part of the app — everything inside the window is the design.
+        </p>
+        <div class="np-group">
+          <div class="np-cap">Setup</div>
+          <button data-go="consent">First launch · consent</button>
+          <button data-go="download">Download in progress</button>
+          <button data-go="dlfail">Download failed</button>
+          <button data-go="verify">Verifying model</button>
+          <button data-go="vfail">Verification failed</button>
+        </div>
+        <div class="np-group">
+          <div class="np-cap">Chat</div>
+          <button data-go="chat-new">New chat</button>
+          <button data-go="chat-stream">Reply streaming</button>
+          <button data-go="chat-stopped">Reply stopped by user</button>
+          <button data-go="chat-history">History &amp; search</button>
+          <button data-go="chat-offline">Offline chatting</button>
+        </div>
+        <div class="np-group">
+          <div class="np-cap">Modes &amp; theme</div>
+          <button data-go="settings">Settings</button>
+          <button data-go="gpu-active">GPU active (experimental)</button>
+          <button data-go="gpu-fallback">GPU unavailable · fallback</button>
+          <button data-go="theme-light">Light theme</button>
+          <button data-go="theme-dark">Dark theme</button>
+        </div>
+        <div class="np-group">
+          <div class="np-cap">Scenario toggles</div>
+          <label class="np-check"
+            ><input type="checkbox" id="scFailDl" /> Next download fails</label
+          >
+          <label class="np-check"
+            ><input type="checkbox" id="scFailVerify" /> Next verification
+            fails</label
+          >
+          <div class="np-row">
+            <span>GPU test result</span>
+            <span class="seg"
+              ><button id="gpuFailR" class="on">Fails</button
+              ><button id="gpuOkR">Works</button></span
+            >
+          </div>
+          <div class="np-row">
+            <span>Connection</span>
+            <span class="seg"
+              ><button id="connOn" class="on">Online</button
+              ><button id="connOff">Offline</button></span
+            >
+          </div>
+        </div>
+        <button class="np-reset" id="btnReset">Reset demo</button>
+      </aside>
+      <button id="navTab" hidden>Reviewer states</button>
+    </main>
+
+    <script>
+      /* ================= Icons ================= */
+      const IC = {
+        mark: '<path d="M40.5 15.5A18.6 18.6 0 1 0 40.5 32.5" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><circle class="markdot" cx="24" cy="24" r="5.6" fill="currentColor" stroke="none"/>',
+        plus: '<path d="M12 5v14M5 12h14"/>',
+        search:
+          '<circle cx="11" cy="11" r="7"/><path d="M20.5 20.5 16.6 16.6"/>',
+        menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+        x: '<path d="M6 6l12 12M18 6 6 18"/>',
+        minline: '<path d="M6 12h12"/>',
+        maxrect: '<rect x="6" y="6" width="12" height="12" rx="1.5"/>',
+        sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/>',
+        moon: '<path d="M20 13.5A8 8 0 1 1 10.5 4 6.5 6.5 0 0 0 20 13.5Z"/>',
+        sliders:
+          '<path d="M4 7h16M4 12h16M4 17h16" stroke-width="1.6"/><path d="M9 7m-2 0" /><path d="M9 4.8v4.4" stroke-width="3.4"/><path d="M15 9.8v4.4" stroke-width="3.4"/><path d="M8 14.8v4.4" stroke-width="3.4"/>',
+        trash: '<path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13M10 11v5M14 11v5"/>',
+        pencil: '<path d="M4 20l1-4L16.5 4.5a2.12 2.12 0 0 1 3 3L8 19l-4 1Z"/>',
+        copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V7a2 2 0 0 1 2-2h8"/>',
+        retry:
+          '<path d="M2.5 4.5v5.5H8"/><path d="M4 14.5a8.2 8.2 0 1 0 1.9-8.5L2.5 10"/>',
+        arrowup: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+        stop: '<rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor" stroke="none"/>',
+        shieldcheck:
+          '<path d="M12 3l7 2.8V11c0 4.4-2.9 7.7-7 9-4.1-1.3-7-4.6-7-9V5.8L12 3Z"/><path d="M9 11.6l2.1 2.1 4-4.2"/>',
+        drive:
+          '<rect x="3" y="8" width="18" height="8" rx="2"/><circle cx="17" cy="12" r="1.1" fill="currentColor" stroke="none"/><path d="M6.5 12h5"/>',
+        check: '<path d="M5 13l4 4L19 7"/>',
+        alerttri:
+          '<path d="M12 3.5 2.8 20h18.4L12 3.5Z"/><path d="M12 10v4.5M12 17.2v.01"/>',
+        info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.8v.01"/>',
+        wifioff:
+          '<path d="M3 3l18 18"/><path d="M8.7 16.2a4.9 4.9 0 0 1 5.6-.9M5.2 12.6a10 10 0 0 1 3.4-2.1M15.6 10.6a10 10 0 0 1 3.2 2"/><path d="M12 19.3v.01" stroke-width="3.4"/>',
+        wificheck:
+          '<path d="M5 12.5a10 10 0 0 1 14 0M8.3 16a5.5 5.5 0 0 1 7.4 0"/><path d="M12 19.3v.01" stroke-width="3.4"/><path d="M15.5 4.5l2 2 4-4" transform="translate(-1 1)"/>',
+        chevd: '<path d="M6 9l6 6 6-6"/>',
+        chevr: '<path d="M9 6l6 6-6 6"/>',
+        cpu: '<rect x="7" y="7" width="10" height="10" rx="1.5"/><rect x="10.4" y="10.4" width="3.2" height="3.2"/><path d="M9 4v3M15 4v3M9 17v3M15 17v3M4 9h3M4 15h3M17 9h3M17 15h3"/>',
+        gpu: '<rect x="3" y="7" width="18" height="10" rx="2"/><circle cx="15" cy="12" r="3"/><circle cx="7.2" cy="12" r="1.1" fill="currentColor" stroke="none"/><path d="M5.5 17v2.2M18.5 17v2.2"/>',
+        msgic:
+          '<path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4V6Z"/>',
+      };
+      function icon(name, size) {
+        size = size || 16;
+        const inner = name === "mark" ? IC.mark : IC[name] || "";
+        const stroke =
+          name === "mark"
+            ? ""
+            : ' fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
+        return (
+          '<svg class="i" viewBox="0 0 24 24" width="' +
+          size +
+          '" height="' +
+          size +
+          '"' +
+          stroke +
+          ' aria-hidden="true">' +
+          inner +
+          "</svg>"
+        );
+      }
+      document.querySelectorAll("[data-ic]").forEach((el) => {
+        el.outerHTML = icon(
+          el.dataset.ic,
+          parseInt(el.dataset.size || "16", 10),
+        );
+      });
+      const I = (n, s) => icon(n, s);
+
+      /* ================= Copy ================= */
+      const ANSWERS = {
+        email: [
+          "Here is a warm but clear draft you can adapt:\n\nSubject: Thank you for the invitation\n\nHi [Name],\n\nThank you so much for thinking of me — I am honored to be invited. Unfortunately I won't be able to make it this time, but I would love to catch up another day. Would coffee in a couple of weeks suit you?\n\nThanks again for including me,\n[Your name]\n\nOne note: this is a first draft — check that the tone fits your relationship and adjust the details before sending.",
+          "Here is a shorter, more casual version:\n\nHi [Name],\n\nThanks so much for the invite — I am really touched. Sadly I can't make it this time, but let's find a date for coffee soon?\n\nHope it's wonderful,\n[Your name]\n\nAdjust the closing to whatever feels natural between you two.",
+        ],
+        pump: [
+          "A heat pump moves heat instead of creating it. In winter, it pulls warmth from the outside air — even cold air contains heat — and concentrates it inside your home. In summer, it runs in reverse, carrying indoor heat back outside.\n\nBecause it moves heat rather than burning fuel to make it, a heat pump can deliver around three units of warmth for every unit of electricity it uses. That is why it is often cheaper to run than an old electric heater. The trade-offs are a higher upfront cost and best results in a well-insulated home.",
+          "In one line: a heat pump is an air conditioner that can also run backwards, moving heat into your home in winter and out of it in summer. Because it moves existing heat instead of making new heat, it does the same job with roughly a third of the electricity of a conventional heater.",
+        ],
+        focus: [
+          "A few things that genuinely tend to help:\n\n1. Pick one task before you sit down — decide the night before, so the morning doesn't start with a decision.\n2. Work in a 25–30 minute block, then take a real 5-minute break away from the screen.\n3. Put your phone in another room; distance beats willpower.\n4. Keep a \"later\" notepad: when a stray thought appears, write it down and return to the task.\n5. End the day by writing the first step of tomorrow's task.\n\nIf you like, I can turn these into a simple daily plan you can print.",
+          'The short version: choose tomorrow\'s one task tonight, work in short timed blocks, keep your phone in a different room, and keep a "later" pad for stray thoughts. I can shape that into a printable daily plan if it would help.',
+        ],
+        pack: [
+          "Here is a compact autumn weekend list:\n\n- Layers: 2 T-shirts, 1 warm jumper, 1 light jacket\n- Comfortable trousers and one spare\n- Underwear and socks per day, plus one spare\n- Toiletry bag and any medication\n- Phone charger and a small power bank\n- Reusable water bottle\n- A book or downloaded podcasts for the journey\n\nRule of thumb: lay everything on the bed first, then remove a quarter of it. Adjust for the forecast and your plans.",
+          "Keep it simple: layered clothes for changeable weather, one spare of the essentials, toiletries and medication, chargers, a water bottle, and something to read. Lay it all out first, then take a quarter away.",
+        ],
+        interest: [
+          "Compound interest is interest that earns interest. Say you save 100 at 5% a year. After year one you have 105. In year two you earn 5% on 105, not 100 — so you gain 5.25, ending with 110.25.\n\nIt feels small at first, then accelerates: each year's growth is calculated on an ever-larger pile. Two practical takeaways — starting early matters more than the exact rate, and the same math works against you on credit-card debt.",
+          "Think of it as a snowball: your savings earn interest, and then that interest starts earning interest too. Small at first, faster every year — and the same snowball rolls against you when it is credit-card debt.",
+        ],
+        default: [
+          "I can help with everyday writing and thinking — drafting emails and letters, summarizing long text, brainstorming ideas, explaining things in plain language, or planning tasks step by step. Everything happens on this PC: your message never left it.\n\nTell me which of those you'd like to start with, or just describe what you need in your own words.",
+          'Happy to help. A good way to start is to tell me three things: what you are working on, who it is for, and what "done well" looks like. With that, I can draft, rewrite, or explain — all locally on this PC, without an internet connection.',
+        ],
+      };
+      function routeAnswer(t) {
+        t = t.toLowerCase();
+        if (/invit|email|declin|polite|letter/.test(t)) return "email";
+        if (/heat|pump|heating|cooling/.test(t)) return "pump";
+        if (/focus|concentrat|distract|work from home|procrastin/.test(t))
+          return "focus";
+        if (/pack|trip|luggag|travel|weekend away/.test(t)) return "pack";
+        if (/interest|saving|invest|compound/.test(t)) return "interest";
+        return "default";
+      }
+
+      /* ================= State ================= */
+      let uid = 0;
+      const nid = () => "c" + ++uid;
+      function seedChat(title, when, msgs) {
+        return { id: nid(), title, when, messages: msgs };
+      }
+      const mU = (t) => ({ role: "user", content: t });
+      const mA = (k, v, c) => ({
+        role: "ai",
+        key: k,
+        vi: v,
+        content: c !== undefined ? c : ANSWERS[k][0],
+      });
+      const S = {
+        theme: "light",
+        conn: true,
+        entered: false,
+        failDl: false,
+        failVerify: false,
+        gpuResult: "fail",
+        gpuStatus: "off",
+        chats: [
+          seedChat("Declining an invitation politely", "Yesterday", [
+            mU(
+              "Can you help me write a polite email declining a birthday invitation?",
+            ),
+            mA("email", 0),
+          ]),
+          seedChat("Heat pump question", "Yesterday", [
+            mU("Explain how a heat pump works in simple terms"),
+            mA("pump", 0),
+          ]),
+          seedChat("Focus while working from home", "2 days ago", [
+            mU(
+              "Give me practical tips to stay focused while working from home",
+            ),
+            mA("focus", 0),
+          ]),
+          seedChat("Weekend trip packing list", "3 days ago", [
+            mU("Make a short packing list for an autumn weekend trip"),
+            mA("pack", 0),
+          ]),
+          seedChat("Compound interest, plainly", "Last week", [
+            mU("Explain compound interest like I am new to it"),
+            mA("interest", 0),
+          ]),
+        ],
+        activeId: null,
+        streaming: null,
+        dl: { timer: null, pct: 0, verifyTimer: null, lineTimer: null },
+      };
+      const $ = (id) => document.getElementById(id);
+      const win = $("win"),
+        app = $("app"),
+        onboard = $("onboard");
+      const chatList = $("chatList"),
+        msglist = $("msglist"),
+        msgscroll = $("msgscroll"),
+        greeting = $("greeting");
+      const input = $("input"),
+        sendBtn = $("sendBtn"),
+        composerHint = $("composerHint");
+      const searchInput = $("searchInput"),
+        searchCount = $("searchCount");
+      const esc = (s) =>
+        s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const activeChat = () => S.chats.find((c) => c.id === S.activeId) || null;
+
+      /* ================= Toasts & SR ================= */
+      function toast(msg, kind) {
+        kind = kind || "ok";
+        const box = $("toasts");
+        while (box.children.length >= 3) box.firstChild.remove();
+        const t = document.createElement("div");
+        t.className = "toast " + kind;
+        t.innerHTML =
+          I(
+            kind === "ok" ? "check" : kind === "warn" ? "alerttri" : "info",
+            15,
+          ) +
+          "<span>" +
+          msg +
+          "</span>";
+        box.appendChild(t);
+        setTimeout(() => {
+          t.style.opacity = "0";
+          t.style.transition = "opacity .3s";
+          setTimeout(() => t.remove(), 320);
+        }, 3600);
+      }
+      const say = (m) => {
+        $("sr").textContent = "";
+        requestAnimationFrame(() => ($("sr").textContent = m));
+      };
+
+      /* ================= Theme & connection ================= */
+      function setTheme(t) {
+        S.theme = t;
+        document.documentElement.dataset.theme = t;
+        $("themeBtn").innerHTML = I(t === "light" ? "moon" : "sun", 17);
+        document.querySelectorAll("#modalRoot [data-themeopt]").forEach((b) => {
+          b.classList.toggle("on", b.dataset.themeopt === t);
+          b.setAttribute("aria-pressed", b.dataset.themeopt === t);
+        });
+      }
+      $("themeBtn").addEventListener("click", () =>
+        setTheme(S.theme === "light" ? "dark" : "light"),
+      );
+      function updateConnChip() {
+        const c = $("connChip");
+        c.innerHTML = S.conn
+          ? I("wificheck", 13) + "Internet not required"
+          : I("wifioff", 13) + "Internet off · chat still works";
+        c.title = S.conn
+          ? "Civra never needs the internet for chatting. It is downloaded once during setup."
+          : "You are offline. Civra keeps working — everything runs on this PC.";
+      }
+      function setConn(on) {
+        S.conn = on;
+        $("connOn").classList.toggle("on", on);
+        $("connOff").classList.toggle("on", !on);
+        updateConnChip();
+        if (!on && S.dl.timer) {
+          doDlFail(S.dl.pct);
+          toast("The connection dropped, so the download stopped.", "warn");
+        } else if (!on && S.entered)
+          toast("Internet is off — Civra keeps working locally.", "info");
+      }
+
+      /* ================= Onboarding ================= */
+      const STAGES = [
+        "obConsent",
+        "obDownload",
+        "obDlFail",
+        "obVerify",
+        "obVerifyFail",
+        "obDone",
+      ];
+      const RING_C = 2 * Math.PI * 52;
+      function ringMode(mode, pct) {
+        const w = $("ringWrap");
+        w.dataset.mode = mode;
+        $("rcMark").hidden = !(mode === "idle" || mode === "verify");
+        $("ringPct").hidden = mode !== "progress";
+        $("rcAlert").hidden = mode !== "warn";
+        $("ringFill").style.strokeDashoffset =
+          mode === "progress"
+            ? RING_C * (1 - (pct || 0) / 100)
+            : mode === "done"
+              ? 0
+              : RING_C;
+      }
+      function obStage(name) {
+        STAGES.forEach((id) => ($("" + id).hidden = true));
+        const map = {
+          consent: ["obConsent", "idle", ""],
+          download: ["obDownload", "progress", "Step 1 of 3 · Download"],
+          dlfail: ["obDlFail", "warn", ""],
+          verify: ["obVerify", "verify", "Step 2 of 3 · Check"],
+          vfail: ["obVerifyFail", "warn", ""],
+          done: ["obDone", "done", "Step 3 of 3 · Ready"],
+        };
+        const [id, mode, step] = map[name];
+        $("" + id).hidden = false;
+        ringMode(mode, S.dl.pct);
+        $("obStep").hidden = !step;
+        $("obStep").textContent = step;
+        markNav(name);
+        clearInterval(S.dl.lineTimer);
+      }
+      $("techDetails").innerHTML =
+        "<div><b>Civra Mind 1</b>Model</div>" +
+        "<div><b>.litertlm</b>File format</div>" +
+        "<div><b>~3 billion, 4-bit quantized</b>Parameters</div>" +
+        "<div><b>LiteRT · CPU (GPU experimental)</b>Runtime</div>" +
+        "<div><b>≈ 2.4 GB (2,457 MB)</b>Download size</div>" +
+        "<div><b>Bundled with Civra — no model store</b>Publisher</div>" +
+        "<div><b>Checksum-verified before first use</b>Integrity</div>";
+      $("btnDetails").addEventListener("click", () => {
+        const d = $("techDetails"),
+          open = d.hidden;
+        d.hidden = !open;
+        $("btnDetails").setAttribute("aria-expanded", open);
+        $("btnDetails").innerHTML =
+          I("chevd", 16) +
+          (open ? "Hide technical details" : "View technical details");
+      });
+      $("consentChk").addEventListener("change", (e) => {
+        $("btnDownload").disabled = !e.target.checked;
+      });
+      $("btnDownload").addEventListener("click", () => startDownload(0));
+      $("btnCancelDl").addEventListener("click", () => {
+        stopDlTimer();
+        obStage("consent");
+        toast("Download canceled. Nothing was removed.", "info");
+      });
+      $("btnRetryDl").addEventListener("click", () => {
+        if (!S.conn) {
+          toast("Still no internet — reconnect, then try again.", "warn");
+          return;
+        }
+        startDownload(S.dl.pct || 0);
+        toast(
+          "Resuming from " +
+            Math.round(S.dl.pct || 0) +
+            "% — you are not starting over.",
+          "info",
+        );
+      });
+      $("btnBackConsent").addEventListener("click", () => obStage("consent"));
+      $("btnRedownload").addEventListener("click", () => {
+        startDownload(0);
+        toast("Broken file deleted. Downloading again.", "info");
+      });
+      $("btnCancelSetup").addEventListener("click", () => obStage("consent"));
+
+      function stopDlTimer() {
+        clearInterval(S.dl.timer);
+        S.dl.timer = null;
+      }
+      function startDownload(from) {
+        obStage("download");
+        S.dl.pct = from || 0;
+        paintDl();
+        stopDlTimer();
+        S.dl.timer = setInterval(() => {
+          S.dl.pct += 0.9 + Math.random() * 1.4 + (from > 0 ? 0.5 : 0);
+          if (S.conn === false) {
+            doDlFail(S.dl.pct);
+            return;
+          }
+          if (S.failDl && S.dl.pct >= 62) {
+            S.failDl = false;
+            $("scFailDl").checked = false;
+            doDlFail(S.dl.pct);
+            return;
+          }
+          if (S.dl.pct >= 100) {
+            S.dl.pct = 100;
+            paintDl();
+            stopDlTimer();
+            setTimeout(startVerify, 450);
+            return;
+          }
+          paintDl();
+        }, 100);
+      }
+      function paintDl() {
+        ringMode("progress", S.dl.pct);
+        $("ringPct").textContent = Math.floor(S.dl.pct) + "%";
+        $("dlAmount").textContent =
+          Math.round((2457 * S.dl.pct) / 100).toLocaleString("en-US") +
+          " of 2,457 MB";
+        const spd = 14 + Math.random() * 8;
+        $("dlSpeed").textContent = "about " + Math.round(spd) + " MB/s";
+        const leftMb = 2457 * (1 - S.dl.pct / 100),
+          sec = leftMb / spd;
+        $("dlEta").textContent =
+          sec > 90
+            ? "about " + Math.round(sec / 60) + " min"
+            : "about " + Math.max(2, Math.round(sec)) + " s";
+      }
+      function doDlFail(pct) {
+        stopDlTimer();
+        S.dl.pct = Math.min(pct, 99);
+        $("dlFailPct").textContent = Math.max(1, Math.round(S.dl.pct)) + "%";
+        obStage("dlfail");
+      }
+      const VERIFY_LINES = [
+        "Making sure the file is complete…",
+        "Confirming it matches the official fingerprint…",
+        "Preparing first launch…",
+      ];
+      function startVerify() {
+        obStage("verify");
+        say("Checking the downloaded model.");
+        let li = 0;
+        $("verifyLine").textContent = VERIFY_LINES[0];
+        S.dl.lineTimer = setInterval(() => {
+          li = (li + 1) % VERIFY_LINES.length;
+          $("verifyLine").textContent = VERIFY_LINES[li];
+        }, 1100);
+        S.dl.verifyTimer = setTimeout(() => {
+          if (S.failVerify) {
+            S.failVerify = false;
+            $("scFailVerify").checked = false;
+            obStage("vfail");
+            ringMode("warn");
+            return;
+          }
+          obStage("done");
+          say("All checks passed.");
+          setTimeout(() => enterApp(true), 1400);
+        }, 2700);
+      }
+      function enterApp(first) {
+        clearTimeout(S.dl.verifyTimer);
+        clearInterval(S.dl.lineTimer);
+        onboard.hidden = true;
+        app.hidden = false;
+        S.entered = true;
+        renderChats();
+        newChat();
+        if (first)
+          toast("Setup complete — Civra now works without internet.", "ok");
+        markNav("chat-new");
+        setTimeout(() => input.focus(), 60);
+      }
+
+      /* ================= Chat rendering ================= */
+      function chatSnippet(c, q) {
+        for (const m of c.messages) {
+          const i = m.content.toLowerCase().indexOf(q);
+          if (i > -1) {
+            const s = Math.max(0, i - 14);
+            return esc(
+              (s > 0 ? "…" : "") +
+                m.content.slice(s, i + q.length + 26).replace(/\n/g, " ") +
+                "…",
+            );
+          }
+        }
+        return null;
+      }
+      function hiTitle(title, q) {
+        if (!q) return esc(title);
+        const i = title.toLowerCase().indexOf(q);
+        if (i < 0) return esc(title);
+        return (
+          esc(title.slice(0, i)) +
+          "<mark>" +
+          esc(title.slice(i, i + q.length)) +
+          "</mark>" +
+          esc(title.slice(i + q.length))
+        );
+      }
+      function renderChats() {
+        const q = searchInput.value.trim().toLowerCase();
+        const list = q
+          ? S.chats.filter(
+              (c) =>
+                c.title.toLowerCase().includes(q) ||
+                c.messages.some((m) => m.content.toLowerCase().includes(q)),
+            )
+          : S.chats;
+        chatList.innerHTML = "";
+        S.chats.forEach((c) => {
+          if (!list.includes(c)) return;
+          const item = document.createElement("div");
+          item.className = "chat-item" + (c.id === S.activeId ? " active" : "");
+          item.setAttribute("role", "listitem");
+          const snip = q ? chatSnippet(c, q) : null;
+          item.innerHTML =
+            '<button class="ci-main" data-act="open" data-id="' +
+            c.id +
+            '">' +
+            '<span class="ci-title">' +
+            hiTitle(c.title, q) +
+            "</span>" +
+            '<span class="ci-meta">' +
+            esc(c.when) +
+            (snip ? " · " + snip : "") +
+            "</span>" +
+            "</button>" +
+            '<span class="ci-actions">' +
+            '<button class="iconbtn" data-act="rename" data-id="' +
+            c.id +
+            '" aria-label="Rename chat" title="Rename">' +
+            I("pencil", 14) +
+            "</button>" +
+            '<button class="iconbtn" data-act="del" data-id="' +
+            c.id +
+            '" aria-label="Delete chat" title="Delete">' +
+            I("trash", 14) +
+            "</button>" +
+            "</span>";
+          chatList.appendChild(item);
+        });
+        $("sidebarEmpty").hidden = S.chats.length > 0;
+        searchCount.hidden = !q;
+        if (q)
+          searchCount.textContent =
+            list.length + " of " + S.chats.length + " chats match";
+      }
+      searchInput.addEventListener("input", renderChats);
+
+      function renderThread() {
+        const chat = activeChat();
+        greeting.hidden = !!chat;
+        $("chatTitle").textContent = chat ? chat.title : "New chat";
+        msglist.innerHTML = "";
+        if (!chat) return;
+        chat.messages.forEach((m, idx) => {
+          const last = idx === chat.messages.length - 1;
+          if (m.role === "user") {
+            const d = document.createElement("div");
+            d.className = "msg user";
+            const t = document.createElement("div");
+            t.className = "m-text";
+            t.textContent = m.content;
+            d.appendChild(t);
+            msglist.appendChild(d);
+            return;
+          }
+          const d = document.createElement("div");
+          d.className = "msg ai" + (m.streaming ? " streaming" : "");
+          d.innerHTML = '<div class="avatar">' + I("mark", 19) + "</div>";
+          const body = document.createElement("div");
+          body.className = "m-body";
+          const tx = document.createElement("div");
+          tx.className = "m-text" + (m.streaming ? " streaming" : "");
+          tx.textContent = m.content;
+          body.appendChild(tx);
+          if (m.streaming) tx.id = "streamTxt";
+          if (m.stopped) {
+            const n = document.createElement("div");
+            n.className = "stopnote";
+            n.innerHTML =
+              I("stop", 13) + "Stopped by you — this reply is incomplete.";
+            body.appendChild(n);
+          }
+          if (!m.streaming) {
+            const acts = document.createElement("div");
+            acts.className = "m-acts";
+            acts.innerHTML =
+              '<button class="act" data-act="copy" data-i="' +
+              idx +
+              '">' +
+              I("copy", 13) +
+              "Copy</button>" +
+              (last
+                ? '<button class="act" data-act="retry" data-i="' +
+                  idx +
+                  '">' +
+                  I("retry", 13) +
+                  "Retry</button>"
+                : "");
+            body.appendChild(acts);
+          }
+          d.appendChild(body);
+          msglist.appendChild(d);
+        });
+        scrollBottom(true);
+      }
+      function scrollBottom(force) {
+        const near =
+          msgscroll.scrollHeight -
+            msgscroll.scrollTop -
+            msgscroll.clientHeight <
+          140;
+        if (force || near) msgscroll.scrollTop = msgscroll.scrollHeight;
+      }
+
+      /* ================= Streaming ================= */
+      function setComposerStreaming(on) {
+        if (on) {
+          sendBtn.classList.add("stop");
+          sendBtn.title = "Stop generating";
+          sendBtn.setAttribute("aria-label", "Stop generating");
+          sendBtn.innerHTML = I("stop", 15) + "<span>Stop</span>";
+          composerHint.textContent =
+            "Civra is writing — press Stop to end the reply early.";
+        } else {
+          sendBtn.classList.remove("stop");
+          sendBtn.title = "Send";
+          sendBtn.setAttribute("aria-label", "Send");
+          sendBtn.innerHTML = I("arrowup", 18);
+          composerHint.textContent =
+            "Press Enter to send · Shift + Enter for a new line";
+        }
+      }
+      function streamReply(chat, key, vi) {
+        const full = ANSWERS[key][vi % ANSWERS[key].length];
+        const msg = { role: "ai", key, vi, content: "", streaming: true };
+        chat.messages.push(msg);
+        renderThread();
+        setComposerStreaming(true);
+        say("Civra is replying.");
+        markNav("chat-stream");
+        let i = 0;
+        const timer = setInterval(() => {
+          i += 2 + Math.floor(Math.random() * 4);
+          msg.content = full.slice(0, i);
+          const el = $("streamTxt");
+          if (el) {
+            el.textContent = msg.content;
+            scrollBottom(false);
+          }
+          if (i >= full.length) finishStream(false);
+        }, 18);
+        S.streaming = { chat, msg, timer, full };
+      }
+      function finishStream(stoppedByUser) {
+        if (!S.streaming) return;
+        const { chat, msg, timer, full } = S.streaming;
+        clearInterval(timer);
+        S.streaming = null;
+        msg.streaming = false;
+        if (stoppedByUser) {
+          msg.stopped = true;
+          say("Reply stopped.");
+        } else {
+          msg.content = full;
+          say("Reply finished.");
+        }
+        setComposerStreaming(false);
+        renderThread();
+        scrollBottom(false);
+      }
+      function stopStream() {
+        finishStream(true);
+      }
+      sendBtn.addEventListener("click", () =>
+        S.streaming ? stopStream() : send(),
+      );
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          if (!S.streaming) send();
+        }
+      });
+      input.addEventListener("input", () => {
+        input.style.height = "auto";
+        input.style.height = Math.min(input.scrollHeight, 140) + "px";
+      });
+      function send() {
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = "";
+        input.style.height = "auto";
+        let chat = activeChat();
+        if (!chat) {
+          const words = text.split(/\s+/).slice(0, 6).join(" ");
+          chat = {
+            id: nid(),
+            title: words + (text.split(/\s+/).length > 6 ? "…" : ""),
+            when: "Just now",
+            messages: [],
+          };
+          S.chats.unshift(chat);
+          S.activeId = chat.id;
+          renderChats();
+        }
+        chat.messages.push({ role: "user", content: text });
+        renderThread();
+        streamReply(chat, routeAnswer(text), 0);
+      }
+      function copyText(t, ok) {
+        const done = () => toast(ok || "Copied to clipboard.", "ok");
+        const fb = () => {
+          const ta = document.createElement("textarea");
+          ta.value = t;
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand("copy");
+            done();
+          } catch (e) {
+            toast("Copy failed in this preview.", "warn");
+          }
+          ta.remove();
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText)
+          navigator.clipboard.writeText(t).then(done, fb);
+        else fb();
+      }
+
+      /* ================= Sidebar actions ================= */
+      $("btnNewChat").addEventListener("click", () => {
+        stopStream();
+        newChat();
+      });
+      function newChat() {
+        S.activeId = null;
+        renderChats();
+        renderThread();
+        input.focus();
+        markNav("chat-new");
+      }
+      $("sidebarToggle").addEventListener("click", () => {
+        win.classList.add("sb-open");
+        $("scrim").hidden = false;
+      });
+      $("scrim").addEventListener("click", closeSidebar);
+      function closeSidebar() {
+        win.classList.remove("sb-open");
+        $("scrim").hidden = true;
+      }
+      let renameState = null;
+      function startRename(id) {
+        const item = chatList.querySelector(
+          '[data-act="open"][data-id="' + id + '"]',
+        );
+        if (!item) return;
+        const c = S.chats.find((x) => x.id === id);
+        const inp = document.createElement("input");
+        inp.value = c.title;
+        inp.setAttribute("aria-label", "Chat name");
+        inp.style.cssText =
+          "width:100%;border:1px solid var(--accent);border-radius:7px;padding:5px 8px;font-size:13px;font-weight:600;background:var(--bg)";
+        item.replaceWith(inp);
+        inp.focus();
+        inp.select();
+        renameState = { id, inp };
+        inp.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            inp.blur();
+          }
+          if (e.key === "Escape") {
+            renameState = null;
+            renderChats();
+          }
+        });
+        inp.addEventListener("blur", () => {
+          if (!renameState) return;
+          const v = inp.value.trim();
+          if (v) c.title = v;
+          renameState = null;
+          renderChats();
+          if (S.activeId === id) $("chatTitle").textContent = c.title;
+        });
+      }
+      function confirmDialog(title, body, label, onConfirm) {
+        openModal(
+          '<div class="d-head"><h2>' +
+            esc(title) +
+            '</h2><button class="iconbtn" data-act="modal-x" aria-label="Close">' +
+            I("x", 16) +
+            "</button></div>" +
+            '<p style="font-size:13.5px;color:var(--ink2)">' +
+            esc(body) +
+            "</p>" +
+            '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">' +
+            '<button class="btn btn-ghost" data-act="modal-x">Cancel</button>' +
+            '<button class="btn btn-danger" id="confirmYes">' +
+            esc(label) +
+            "</button></div>",
+        );
+        $("confirmYes").addEventListener("click", () => {
+          closeModal();
+          onConfirm();
+        });
+      }
+
+      /* ================= Settings ================= */
+      const TECH_TABLE =
+        "<div><b>Civra Mind 1</b>Model</div>" +
+        "<div><b>.litertlm</b>File format</div>" +
+        "<div><b>~3 billion, 4-bit quantized</b>Parameters</div>" +
+        "<div><b>LiteRT · CPU (GPU experimental)</b>Runtime</div>" +
+        "<div><b>≈ 2.4 GB (2,457 MB)</b>On disk</div>" +
+        "<div><b>Bundled with Civra — no model store</b>Publisher</div>" +
+        "<div><b>Checksum-verified before first use</b>Integrity</div>";
+      let lastFocus = null;
+      function openModal(html) {
+        closeModal();
+        lastFocus = document.activeElement;
+        const scrim = document.createElement("div");
+        scrim.className = "modal-scrim";
+        scrim.id = "modalScrim";
+        scrim.innerHTML =
+          '<div class="dialog" role="dialog" aria-modal="true" aria-label="Dialog">' +
+          html +
+          "</div>";
+        scrim.addEventListener("mousedown", (e) => {
+          if (e.target === scrim) closeModal();
+        });
+        $("modalRoot").appendChild(scrim);
+        const f = scrim.querySelectorAll("button,input,[tabindex]");
+        if (f.length) f[0].focus();
+      }
+      function closeModal() {
+        $("modalRoot").innerHTML = "";
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+      }
+      function openSettings() {
+        markNav("settings");
+        let bodyHtml;
+        if (!S.entered) {
+          /* Pre-setup Settings: theme works now; the rest is visibly locked until setup completes. */
+          bodyHtml =
+            '<div class="d-sec"><div class="d-cap">Appearance</div>' +
+            '<span class="seg-lg">' +
+            '<button data-themeopt="light" aria-pressed="' +
+            (S.theme === "light") +
+            '">' +
+            I("sun", 14) +
+            "Light</button>" +
+            '<button data-themeopt="dark" aria-pressed="' +
+            (S.theme === "dark") +
+            '">' +
+            I("moon", 14) +
+            "Dark</button></span></div>" +
+            '<div class="d-sec"><div class="d-cap">How Civra runs</div>' +
+            '<button class="opt" disabled><span class="radio"></span><span style="flex:1"><b>' +
+            I("cpu", 15) +
+            'CPU <span class="tag ok">Recommended</span> <span class="tag lock">After setup</span></b>' +
+            "<p>Uses this PC's processor. Reliable, and works on any computer that runs Civra.</p></span></button>" +
+            '<button class="opt" disabled><span class="radio"></span><span style="flex:1"><b>' +
+            I("gpu", 15) +
+            'GPU <span class="tag exp">Experimental</span> <span class="tag lock">After setup</span></b>' +
+            "<p>Uses your PC's graphics hardware so replies can start faster.</p></span></button>" +
+            '<p class="d-note">These choices unlock once setup is finished. Right now, Civra is waiting for your OK to download the model.</p></div>' +
+            '<div class="d-sec"><div class="d-cap">Model</div>' +
+            '<div class="d-row">' +
+            I("drive", 16) +
+            "<span>Civra Mind 1 · not downloaded yet</span></div>" +
+            '<p class="d-note">Civra will offer to download it (about 2.4 GB, one time) when you close this window.</p></div>' +
+            '<div class="d-sec"><div class="d-cap">Your data</div>' +
+            '<p class="d-note">No chats yet. Once you start chatting, conversations are saved on this PC only — and you can delete them any time.</p></div>';
+        } else {
+          const gpuRow =
+            S.gpuStatus === "failed"
+              ? '<button class="opt" data-act="gpu-pick" data-mode="gpu">' +
+                '<span class="radio"></span><span style="flex:1"><b>' +
+                I("gpu", 15) +
+                'GPU <span class="tag bad">Failed — using CPU</span></b>' +
+                "<p>Uses your PC's graphics hardware for faster replies. It couldn't start on this PC.</p></span></button>"
+              : '<button class="opt' +
+                (S.gpuStatus === "active" ? " sel" : "") +
+                '" data-act="gpu-pick" data-mode="gpu">' +
+                '<span class="radio"></span><span style="flex:1"><b>' +
+                I("gpu", 15) +
+                'GPU <span class="tag exp">Experimental</span>' +
+                (S.gpuStatus === "active"
+                  ? ' <span class="tag ok">In use</span>'
+                  : "") +
+                "</b>" +
+                "<p>Uses your PC's graphics hardware so replies can start faster. May not work on every PC — if the test fails, Civra switches back to CPU on its own.</p></span></button>";
+          bodyHtml =
+            '<div class="d-sec"><div class="d-cap">Appearance</div>' +
+            '<span class="seg-lg">' +
+            '<button data-themeopt="light" aria-pressed="' +
+            (S.theme === "light") +
+            '">' +
+            I("sun", 14) +
+            "Light</button>" +
+            '<button data-themeopt="dark" aria-pressed="' +
+            (S.theme === "dark") +
+            '">' +
+            I("moon", 14) +
+            "Dark</button></span></div>" +
+            '<div class="d-sec"><div class="d-cap">How Civra runs</div>' +
+            '<button class="opt' +
+            (S.gpuStatus !== "active" ? " sel" : "") +
+            '" data-act="cpu-pick">' +
+            '<span class="radio"></span><span style="flex:1"><b>' +
+            I("cpu", 15) +
+            'CPU <span class="tag ok">Recommended</span>' +
+            (S.gpuStatus !== "active"
+              ? ' <span class="tag ok">In use</span>'
+              : "") +
+            "</b>" +
+            "<p>Uses this PC's processor. Reliable, and works on any computer that runs Civra.</p></span></button>" +
+            gpuRow +
+            '<div id="gpuTestArea"></div></div>' +
+            '<div class="d-sec"><div class="d-cap">Model</div>' +
+            '<div class="d-row">' +
+            I("drive", 16) +
+            "<span>Civra Mind 1 · 2.4 GB on this PC</span></div>" +
+            '<div style="margin-top:8px"><button class="btn btn-ghost" data-act="set-details" aria-expanded="false">' +
+            I("chevd", 15) +
+            "Technical details</button></div>" +
+            '<div class="techdetails" id="setTech" hidden>' +
+            TECH_TABLE +
+            "</div></div>" +
+            '<div class="d-sec"><div class="d-cap">Your data</div>' +
+            '<div class="d-row"><span>' +
+            S.chats.length +
+            " chat" +
+            (S.chats.length === 1 ? "" : "s") +
+            ' saved on this PC</span><span class="spacer"></span>' +
+            '<button class="link-danger" data-act="del-all">Delete all chats…</button></div>' +
+            '<p class="d-note">Deleting removes conversations from this PC permanently. There is no cloud copy — that also means there is nothing to restore.</p></div>';
+        }
+        openModal(
+          '<div class="d-head"><h2>Settings</h2><button class="iconbtn" data-act="modal-x" aria-label="Close settings" title="Close">' +
+            I("x", 17) +
+            "</button></div>" +
+            bodyHtml +
+            '<p class="d-note" style="margin-top:14px">Privacy: everything is processed locally on this PC. That keeps your chats off the internet, but like any software it is not a guarantee of absolute security.</p>' +
+            '<div class="d-about">Civra 1.0 · MVP design mockup<br>No account · No cloud inference · No telemetry</div>',
+        );
+        $("modalRoot")
+          .querySelectorAll("[data-themeopt]")
+          .forEach((b) =>
+            b.addEventListener("click", () => setTheme(b.dataset.themeopt)),
+          );
+      }
+      document.addEventListener("click", (e) => {
+        const el = e.target.closest("[data-act]");
+        if (!el) return;
+        const act = el.dataset.act;
+        if (act === "modal-x") closeModal();
+        else if (act === "open") {
+          stopStream();
+          S.activeId = el.dataset.id;
+          renderChats();
+          renderThread();
+          closeSidebar();
+          markNav("chat-history");
+        } else if (act === "rename") startRename(el.dataset.id);
+        else if (act === "del") {
+          const c = S.chats.find((x) => x.id === el.dataset.id);
+          confirmDialog(
+            "Delete chat?",
+            '"' +
+              c.title +
+              '" will be removed from this PC. This cannot be undone.',
+            "Delete chat",
+            () => {
+              S.chats = S.chats.filter((x) => x.id !== c.id);
+              if (S.activeId === c.id) {
+                S.activeId = null;
+                renderThread();
+              }
+              renderChats();
+              toast("Chat deleted from this PC.", "ok");
+            },
+          );
+        } else if (act === "del-all") {
+          const n = S.chats.length;
+          confirmDialog(
+            "Delete all chats?",
+            n +
+              " conversation" +
+              (n === 1 ? "" : "s") +
+              " will be removed from this PC permanently. This cannot be undone.",
+            "Delete all",
+            () => {
+              S.chats = [];
+              S.activeId = null;
+              renderChats();
+              renderThread();
+              toast("All chats deleted from this PC.", "ok");
+              openSettings(); /* re-render Settings in place, now showing "No chats" */
+            },
+          );
+        } else if (act === "copy") {
+          const c = activeChat();
+          if (c) copyText(c.messages[+el.dataset.i].content);
+        } else if (act === "retry") {
+          const c = activeChat();
+          if (!c) return;
+          const i = +el.dataset.i,
+            m = c.messages[i];
+          if (!m || m.role !== "ai") return;
+          if (S.streaming) stopStream();
+          c.messages.splice(i);
+          renderThread();
+          streamReply(c, m.key, (m.vi || 0) + 1);
+        } else if (act === "starter") {
+          input.value = "";
+          sendStarter(el.dataset.key);
+        } else if (act === "cpu-pick") {
+          setRunMode("cpu");
+        } else if (act === "gpu-pick") {
+          runGpuTest();
+        } else if (act === "gpu-retest") {
+          runGpuTest();
+        } else if (act === "set-details") {
+          const d = $("setTech"),
+            open = d.hidden;
+          d.hidden = !open;
+          el.setAttribute("aria-expanded", open);
+          el.innerHTML =
+            I("chevd", 15) +
+            (open ? "Hide technical details" : "Technical details");
+        } else if (act === "ban-close") {
+          $("banner").hidden = true;
+        } else if (act === "ban-cpu") {
+          setRunMode("cpu");
+          $("banner").hidden = true;
+        } else if (act === "ban-why") {
+          const d = $("banWhy");
+          if (d) d.hidden = !d.hidden;
+        }
+      });
+      function sendStarter(key) {
+        const prompts = {
+          email: "Help me draft a polite email declining an invitation",
+          pump: "Explain how a heat pump works in simple terms",
+          focus: "Give me tips to stay focused while working from home",
+        };
+        let chat = activeChat();
+        if (!chat) {
+          chat = {
+            id: nid(),
+            title: prompts[key].split(/\s+/).slice(0, 5).join(" ") + "…",
+            when: "Just now",
+            messages: [],
+          };
+          S.chats.unshift(chat);
+          S.activeId = chat.id;
+          renderChats();
+        }
+        chat.messages.push({ role: "user", content: prompts[key] });
+        renderThread();
+        streamReply(chat, key, 0);
+      }
+      function setRunMode(mode, silentToast) {
+        if (mode === "cpu") {
+          S.gpuStatus = "off";
+          updateModeChip();
+          toast("Using the CPU — the reliable mode.", "info");
+          if ($("modalScrim")) openSettings();
+        }
+      }
+      function updateModeChip() {
+        const c = $("modeChip"),
+          t = $("modeChipTxt");
+        if (S.gpuStatus === "active") {
+          c.classList.add("warnc");
+          t.textContent = "Local · GPU (experimental)";
+          c.title =
+            "Experimental GPU mode. Civra falls back to the CPU automatically if the GPU misbehaves.";
+        } else {
+          c.classList.remove("warnc");
+          t.textContent = "Local · CPU";
+          c.title =
+            "Civra runs on this PC using its processor. Nothing is sent over the internet.";
+        }
+      }
+      function runGpuTest() {
+        const area = $("gpuTestArea");
+        if (!area) return;
+        area.innerHTML =
+          '<div class="gpu-test"><span class="spinner"></span><span>Checking whether this PC\'s graphics hardware supports the experimental mode…</span></div>';
+        document
+          .querySelectorAll("#modalScrim .opt")
+          .forEach((o) => (o.disabled = true));
+        setTimeout(() => {
+          document
+            .querySelectorAll("#modalScrim .opt")
+            .forEach((o) => (o.disabled = false));
+          if (S.gpuResult === "ok") {
+            S.gpuStatus = "active";
+            updateModeChip();
+            area.innerHTML =
+              '<div class="gpu-test"><span style="color:var(--accent);margin-top:2px">' +
+              I("check", 15) +
+              "</span><span>Your PC supports it. Experimental GPU mode is now on — you can switch back to CPU at any time.</span></div>";
+            showBanner(
+              false,
+              "<span>" +
+                I("gpu", 17) +
+                '</span><div class="b-txt"><b>Experimental GPU mode is on.</b> Replies may start faster. If it misbehaves, Civra switches back to CPU on its own.</div><button class="mini-link" data-act="ban-cpu">Switch to CPU</button><button class="iconbtn" data-act="ban-close" aria-label="Dismiss" title="Dismiss">' +
+                I("x", 14) +
+                "</button>",
+            );
+            toast("GPU mode is on — remember it is experimental.", "info");
+          } else {
+            S.gpuStatus = "failed";
+            updateModeChip();
+            area.innerHTML =
+              '<div class="gpu-test err"><span style="color:var(--danger);margin-top:2px">' +
+              I("alerttri", 15) +
+              '</span><span><b>GPU mode couldn\'t start on this PC.</b> Civra has switched back to the reliable CPU mode — nothing is broken, and chatting works exactly as before.<br><button class="mini-link" style="margin-top:6px" data-act="gpu-retest">Test again</button></span></div>';
+            showBanner(
+              true,
+              "<span>" +
+                I("alerttri", 17) +
+                '</span><div class="b-txt"><b>GPU mode isn\'t available on this PC.</b> Civra is using the reliable CPU mode — chatting works exactly as before.' +
+                '<details><summary>Why did this happen?</summary><div style="margin-top:4px">Civra couldn\'t start your graphics hardware for AI, which is common with older graphics drivers. No settings were changed.</div></details></div>' +
+                '<button class="iconbtn" data-act="ban-close" aria-label="Dismiss" title="Dismiss">' +
+                I("x", 14) +
+                "</button>",
+            );
+            toast("GPU not available — Civra switched back to CPU.", "warn");
+          }
+        }, 1700);
+      }
+      function showBanner(warn, html) {
+        const b = $("banner");
+        b.hidden = false;
+        b.innerHTML =
+          '<div class="banner' + (warn ? " warn" : "") + '">' + html + "</div>";
+      }
+
+      /* ================= Starters & greeting ================= */
+      (function () {
+        const h = new Date().getHours();
+        $("greetTitle").textContent =
+          h < 5
+            ? "Up late?"
+            : h < 12
+              ? "Good morning."
+              : h < 18
+                ? "Good afternoon."
+                : "Good evening.";
+        const st = [
+          {
+            k: "email",
+            t: "Help me draft a polite email declining an invitation",
+          },
+          { k: "pump", t: "Explain how a heat pump works in simple terms" },
+          {
+            k: "focus",
+            t: "Give me tips to stay focused while working from home",
+          },
+        ];
+        $("starters").innerHTML = st
+          .map(
+            (s) =>
+              '<button class="starter" data-act="starter" data-key="' +
+              s.k +
+              '">' +
+              I("msgic", 16) +
+              esc(s.t) +
+              "</button>",
+          )
+          .join("");
+      })();
+
+      /* ================= Window controls ================= */
+      $("winMin").addEventListener("click", () =>
+        toast(
+          "Just a mockup — imagine this window minimizing to your taskbar.",
+          "info",
+        ),
+      );
+      $("winMax").addEventListener("click", () => {
+        win.classList.toggle("maxed");
+        $("winMax").setAttribute(
+          "aria-label",
+          win.classList.contains("maxed") ? "Restore" : "Maximize",
+        );
+      });
+      $("winClose").addEventListener("click", () =>
+        toast(
+          "Civra would close here — the mockup stays open for exploring.",
+          "info",
+        ),
+      );
+      $("tbSettings").addEventListener("click", openSettings);
+      $("footSettings").addEventListener("click", openSettings);
+
+      /* ================= Keyboard ================= */
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          if (renameState) {
+            renameState = null;
+            renderChats();
+            return;
+          }
+          if ($("modalScrim")) {
+            closeModal();
+            return;
+          }
+          if (win.classList.contains("sb-open")) closeSidebar();
+        }
+        if (e.key === "Tab" && $("modalScrim")) {
+          const f = [
+            ...$("modalScrim").querySelectorAll(
+              'button,input,summary,[tabindex]:not([tabindex="-1"])',
+            ),
+          ].filter((x) => !x.disabled);
+          if (!f.length) return;
+          const first = f[0],
+            last = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      });
+
+      /* ================= Reviewer panel ================= */
+      function markNav(id) {
+        document
+          .querySelectorAll("#navPanel [data-go]")
+          .forEach((b) => b.classList.toggle("cur", b.dataset.go === id));
+      }
+      function resetTransient() {
+        if (S.streaming) finishStream(true);
+        closeModal();
+        closeSidebar();
+        onboard.hidden = false;
+        app.hidden = !S.entered;
+      }
+      document.querySelectorAll("#navPanel [data-go]").forEach((b) => {
+        b.addEventListener("click", () => {
+          const g = b.dataset.go;
+          if (g === "consent") {
+            resetTransient();
+            stopDlTimer();
+            obStage("consent");
+          } else if (g === "download") {
+            resetTransient();
+            startDownload(0);
+          } else if (g === "dlfail") {
+            resetTransient();
+            stopDlTimer();
+            S.dl.pct = S.dl.pct > 0 && S.dl.pct < 100 ? S.dl.pct : 62;
+            $("dlFailPct").textContent = Math.round(S.dl.pct) + "%";
+            obStage("dlfail");
+          } else if (g === "verify") {
+            resetTransient();
+            startVerify();
+          } else if (g === "vfail") {
+            resetTransient();
+            stopDlTimer();
+            obStage("vfail");
+          } else if (g === "chat-new") {
+            resetTransient();
+            enterApp(false);
+          } else if (g === "chat-stream") {
+            resetTransient();
+            enterApp(false);
+            newChat();
+            sendStarter("pump");
+          } else if (g === "chat-stopped") {
+            resetTransient();
+            enterApp(false);
+            newChat();
+            const chat = {
+              id: nid(),
+              title: "Explain how a heat pump works…",
+              when: "Just now",
+              messages: [
+                mU("Explain how a heat pump works in simple terms"),
+                {
+                  role: "ai",
+                  key: "pump",
+                  vi: 0,
+                  content: ANSWERS.pump[0].slice(0, 150),
+                  streaming: false,
+                  stopped: true,
+                },
+              ],
+            };
+            S.chats.unshift(chat);
+            S.activeId = chat.id;
+            renderChats();
+            renderThread();
+            markNav("chat-stopped");
+          } else if (g === "chat-history") {
+            resetTransient();
+            enterApp(false);
+            S.activeId = S.chats[0].id;
+            renderChats();
+            renderThread();
+            markNav("chat-history");
+            setTimeout(() => searchInput.focus({ preventScroll: true }), 80);
+          } else if (g === "chat-offline") {
+            resetTransient();
+            setConn(false);
+            enterApp(false);
+            markNav("chat-offline");
+          } else if (g === "settings") {
+            resetTransient();
+            enterApp(false);
+            openSettings();
+          } else if (g === "gpu-active") {
+            resetTransient();
+            enterApp(false);
+            S.gpuStatus = "active";
+            updateModeChip();
+            showBanner(
+              false,
+              "<span>" +
+                I("gpu", 17) +
+                '</span><div class="b-txt"><b>Experimental GPU mode is on.</b> Replies may start faster. If it misbehaves, Civra switches back to CPU on its own.</div><button class="mini-link" data-act="ban-cpu">Switch to CPU</button><button class="iconbtn" data-act="ban-close" aria-label="Dismiss" title="Dismiss">' +
+                I("x", 14) +
+                "</button>",
+            );
+            markNav("gpu-active");
+            toast("GPU mode is on — remember it is experimental.", "info");
+          } else if (g === "gpu-fallback") {
+            resetTransient();
+            enterApp(false);
+            S.gpuStatus = "failed";
+            updateModeChip();
+            showBanner(
+              true,
+              "<span>" +
+                I("alerttri", 17) +
+                '</span><div class="b-txt"><b>GPU mode isn\'t available on this PC.</b> Civra is using the reliable CPU mode — chatting works exactly as before.<details><summary>Why did this happen?</summary><div style="margin-top:4px">Civra couldn\'t start your graphics hardware for AI, which is common with older graphics drivers. No settings were changed.</div></details></div><button class="iconbtn" data-act="ban-close" aria-label="Dismiss" title="Dismiss">' +
+                I("x", 14) +
+                "</button>",
+            );
+            markNav("gpu-fallback");
+            toast("GPU not available — Civra switched back to CPU.", "warn");
+          } else if (g === "theme-light") {
+            setTheme("light");
+            markNav("theme-light");
+          } else if (g === "theme-dark") {
+            setTheme("dark");
+            markNav("theme-dark");
+          }
+        });
+      });
+      $("scFailDl").addEventListener(
+        "change",
+        (e) => (S.failDl = e.target.checked),
+      );
+      $("scFailVerify").addEventListener(
+        "change",
+        (e) => (S.failVerify = e.target.checked),
+      );
+      $("gpuFailR").addEventListener("click", () => {
+        S.gpuResult = "fail";
+        $("gpuFailR").classList.add("on");
+        $("gpuOkR").classList.remove("on");
+      });
+      $("gpuOkR").addEventListener("click", () => {
+        S.gpuResult = "ok";
+        $("gpuOkR").classList.add("on");
+        $("gpuFailR").classList.remove("on");
+      });
+      $("connOn").addEventListener("click", () => setConn(true));
+      $("connOff").addEventListener("click", () => setConn(false));
+      $("btnReset").addEventListener("click", () => location.reload());
+      function dockNav(d) {
+        document.body.classList.toggle("nav-docked", d);
+        $("navTab").hidden = !d;
+      }
+      $("navHide").addEventListener("click", () => dockNav(true));
+      $("navTab").addEventListener("click", () => dockNav(false));
+      if (window.innerWidth <= 1080) dockNav(true);
+
+      /* ================= Init ================= */
+      setTheme("light");
+      setConn(true);
+      updateModeChip();
+      renderChats();
+      renderThread();
+      obStage("consent");
+    </script>
+  </body>
+</html>

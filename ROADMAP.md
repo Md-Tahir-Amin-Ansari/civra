@@ -17,7 +17,7 @@ This roadmap is intentionally short. It distinguishes a useful weekend MVP from 
 - [~] First-launch consent and model-download state UI (visual flow exists; real downloader remains).
 - [~] Responsive light/dark chat interface (working; scrollbar and Markdown polish tracked separately).
 - [x] Local SQLite session/history layer.
-- [ ] Context-budget and local-compaction plumbing.
+- [~] Context-budget and local-compaction plumbing (native budget planning exists; local summary generation and persistence remain).
 
 ## Milestone 2 — Reliable local inference
 
